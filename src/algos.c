@@ -3,8 +3,21 @@
 #include "io.h"
 
 /*
- * Arrah Sort
+ * Array Sort
  */
+
+void bubbleSort(int *nums, int numSize) {
+	for (int i = 0; i < numSize; i++) {
+		for (int j = 0; j < numSize - i - 1; j++) {
+			if (nums[j] > nums[j + 1]) {
+				int tmp = nums[j];
+				nums[j] = nums[j + 1];
+				nums[j + 1] = tmp;
+			}
+		}
+	}
+	return;
+}
 
 /*
  * Array Search

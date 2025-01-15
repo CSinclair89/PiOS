@@ -73,6 +73,8 @@ void kernel_main() {
 */
 
 	printp("Algorithm Tests\n\n");
+	arraySortTests();
+	printp("\n");
 	duplicateNumTest();
 	printp("\n");
 	twoSumTest();

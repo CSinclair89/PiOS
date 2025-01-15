@@ -664,7 +664,25 @@ void vectorTests() {
 
 void arraySortTests() {
 
-	int nums[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	printp("--ARRAY SORTING TESTS--\n\n");
+
+	int nums1[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int numSize1 = sizeof(nums1) / sizeof(nums1[0]);
+
+	printp("Testing bubbleSort w/ unsorted array:\n");
+	printp("[%d", nums1[0]);
+	for (int i = 1; i < numSize1; i++) printp(", %d", nums1[i]);
+	printp("]\n");
+
+	printp("\n");
+
+	printp("Array after bubbleSort:\n");
+	bubbleSort(nums1, numSize1);
+	printp("[%d", nums1[0]);
+	for (int i = 1; i < numSize1; i++) printp(", %d", nums1[i]);
+	printp("]\n");
+
+	printp("\n");
 
 
 }
