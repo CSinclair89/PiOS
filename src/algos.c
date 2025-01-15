@@ -63,6 +63,20 @@ void insertionSortDesc(int *nums, int numSize) {
  * Array Search
  */
 
+int binarySearch(int *nums, int numSize, int target) {
+	int l = 0, r = numSize;
+	while (l < r) {
+		int m = (l + r) / 2;
+		if (target == nums[m]) {
+			printp("Found element %d at index %d!\n", target, m);
+			return 1;
+		} 
+		else if (target > nums[m]) l = m + 1;
+		else r = m;
+	}
+	printp("Did not find element %d in the array.\n", target);
+	return 0;
+}
 
 /*
  * HashSet

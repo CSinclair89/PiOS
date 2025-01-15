@@ -15,6 +15,8 @@ void quickSort(int * nums, int numSize);
  * Array Search
  */
 
+int binarySearch(int *nums, int numSize, int target);
+
 /*
  * HashSet
  */

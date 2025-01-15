@@ -16,6 +16,7 @@ void vectorTests();
 
 // algorithms
 void arraySortTests();
+void arraySearchTests();
 void duplicateNumTest();
 void twoSumTest();
 

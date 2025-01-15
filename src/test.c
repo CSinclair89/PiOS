@@ -738,11 +738,11 @@ void arraySortTests() {
 
 
 
-	int nums3[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
-	int nums4[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
-	int nums5[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
-	int nums6[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
-	int nums7[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int nums3[10] = {7, 9, 6, 54, 52, 171, 550, 366, 217, 4};
+	int nums4[10] = {52, 917, 34, 32, 14, 30, 69, 117, 634};
+	int nums5[10] = {13, 431, 47, 14, 502, 17, 20, 42, 56, 61};
+	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};
+	int nums7[10] = {66, 4, 32, 34, 532, 10, 58, 31, 98, 2};
 
 
 
@@ -754,6 +754,34 @@ void arraySortTests() {
 
 
 
+
+}
+
+
+void arraySearchTests() {
+	
+	printp("--ARRAY SEARCH TESTS--\n\n");
+
+	int nums1[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int numSize = sizeof(nums1) / sizeof(nums1[0]);
+	bubbleSortAsc(nums1, numSize);
+
+	printp("Binary Search -- looking for element %d in the array (present):\n", 34);
+	printp("[%d", nums1[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
+	printp("]\n");
+
+	printp("\n");
+
+	binarySearch(nums1, numSize, 34);
+
+	printp("\n");
+
+	printp("Binary Search -- looking for element %d in the array (NOT present):\n", 92);
+	binarySearch(nums1, numSize, 92);
+
+	printp("\n");
+	
 
 }
 

@@ -75,11 +75,15 @@ void kernel_main() {
 	printp("Algorithm Tests\n\n");
 	arraySortTests();
 	printp("\n");
+	arraySearchTests();
+	printp("\n");
 	duplicateNumTest();
 	printp("\n");
+
+/*
 	twoSumTest();
 	printp("\n");
-
+*/
 /*
 	printp("Object Tests\n\n");
 	stringTests();
