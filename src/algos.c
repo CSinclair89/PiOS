@@ -65,14 +65,24 @@ void insertionSortDesc(int *nums, int numSize) {
 
 int binarySearch(int *nums, int numSize, int target) {
 	int l = 0, r = numSize;
+	int isAscending = nums[0] < nums[numSize - 1];
+
+	if (isAscending) printp("Array is sorted ascending.\n");
+	else printp("Array is sorted descending.\n");
+	
 	while (l < r) {
 		int m = (l + r) / 2;
 		if (target == nums[m]) {
 			printp("Found element %d at index %d!\n", target, m);
 			return 1;
-		} 
-		else if (target > nums[m]) l = m + 1;
-		else r = m;
+		}
+		if (isAscending) {
+			if (target > nums[m]) l = m + 1;
+			else r = m;
+		} else {
+			if (target > nums[m]) r = m;
+			else l = m + 1;
+		}
 	}
 	printp("Did not find element %d in the array.\n", target);
 	return 0;

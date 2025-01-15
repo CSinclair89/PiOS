@@ -77,9 +77,10 @@ void kernel_main() {
 	printp("\n");
 	arraySearchTests();
 	printp("\n");
+/*
 	duplicateNumTest();
 	printp("\n");
-
+*/
 /*
 	twoSumTest();
 	printp("\n");

@@ -766,23 +766,39 @@ void arraySearchTests() {
 	int numSize = sizeof(nums1) / sizeof(nums1[0]);
 	bubbleSortAsc(nums1, numSize);
 
-	printp("Binary Search -- looking for element %d in the array (present):\n", 34);
+	printp("Binary Search -- looking for element %d in ascending array (present):\n", 34);
 	printp("[%d", nums1[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
-	printp("]\n");
-
-	printp("\n");
+	printp("]\n\n");
 
 	binarySearch(nums1, numSize, 34);
 
 	printp("\n");
 
-	printp("Binary Search -- looking for element %d in the array (NOT present):\n", 92);
+	printp("Binary Search -- looking for element %d in ascending array (NOT present):\n\n", 92);
+
+	binarySearch(nums1, numSize, 92);
+	
+	bubbleSortDesc(nums1, numSize);
+
+	printp("\n");
+
+	printp("Binary Search -- looking for element %d in descending array (present):\n", 34);
+	printp("[%d", nums1[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
+	printp("]\n\n");
+
+
+	binarySearch(nums1, numSize, 34);
+
+	printp("\n");
+
+	printp("Binary Search -- looking for element %d in descending array (NOT present):\n\n", 92);
+
 	binarySearch(nums1, numSize, 92);
 
 	printp("\n");
 	
-
 }
 
 void duplicateNumTest() {
