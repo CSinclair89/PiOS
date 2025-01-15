@@ -6,7 +6,7 @@
  * Array Sort
  */
 
-void bubbleSort(int *nums, int numSize) {
+void bubbleSortAsc(int *nums, int numSize) {
 	for (int i = 0; i < numSize; i++) {
 		for (int j = 0; j < numSize - i - 1; j++) {
 			if (nums[j] > nums[j + 1]) {
@@ -19,6 +19,46 @@ void bubbleSort(int *nums, int numSize) {
 	return;
 }
 
+void bubbleSortDesc(int *nums, int numSize) {
+	for (int i = 0; i < numSize; i++) {
+		for (int j = 0; j < numSize - i - 1; j++) {
+			if (nums[j] < nums[j + 1]) {
+				int tmp = nums[j];
+				nums[j] = nums[j + 1];
+				nums[j + 1] = tmp;
+			}
+		}
+	}
+	return;
+}
+
+// Time complexity: worst case O(N^2), best case O(N)
+void insertionSortAsc(int *nums, int numSize) {
+	for (int i = 1; i < numSize; i++) {
+		int j = i - 1;
+		while (j >= 0 && nums[j + 1] < nums[j]) {
+			int tmp = nums[j + 1];
+			nums[j + 1] = nums[j];
+			nums[j] = tmp;
+			j--;
+		}
+	}
+	return;			       
+}
+
+// Time complexity: worst case O(N^2), best case O(N)
+void insertionSortDesc(int *nums, int numSize) {
+	for (int i = 1; i < numSize; i++) {
+		int j = i - 1;
+		while (j >= 0 && nums[j + 1] > nums[j]) {
+			int tmp = nums[j + 1];
+			nums[j + 1] = nums[j];
+			nums[j] = tmp;
+			j--;
+		}
+	}
+	return;			       
+}
 /*
  * Array Search
  */

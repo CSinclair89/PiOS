@@ -5,8 +5,10 @@
  * Array Sort
  */
 
-void bubbleSort(int *nums, int numSize);
-void insertionSort(int *nums, int numSize);
+void bubbleSortAsc(int *nums, int numSize);
+void bubbleSortDesc(int *nums, int numSize);
+void insertionSortAsc(int *nums, int numSize);
+void insertionSortDesc(int *nums, int numSize);
 void quickSort(int * nums, int numSize);
 
 /*

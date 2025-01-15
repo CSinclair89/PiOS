@@ -667,22 +667,92 @@ void arraySortTests() {
 	printp("--ARRAY SORTING TESTS--\n\n");
 
 	int nums1[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
-	int numSize1 = sizeof(nums1) / sizeof(nums1[0]);
+	int numSize = sizeof(nums1) / sizeof(nums1[0]);
 
-	printp("Testing bubbleSort w/ unsorted array:\n");
+	printp("Testing Bubble Sort w/ unsorted array:\n");
 	printp("[%d", nums1[0]);
-	for (int i = 1; i < numSize1; i++) printp(", %d", nums1[i]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
 	printp("]\n");
 
 	printp("\n");
 
-	printp("Array after bubbleSort:\n");
-	bubbleSort(nums1, numSize1);
+	printp("Array after Bubble Sort (ascending):\n");
+	bubbleSortAsc(nums1, numSize);
 	printp("[%d", nums1[0]);
-	for (int i = 1; i < numSize1; i++) printp(", %d", nums1[i]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
 	printp("]\n");
 
 	printp("\n");
+
+	printp("Array after Bubble Sort (descending):\n");
+	bubbleSortDesc(nums1, numSize);
+	printp("[%d", nums1[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
+	printp("]\n");
+
+	printp("\n");
+
+	int nums2[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+
+	printp("Testing Insertion Sort w/ unsorted array:\n");
+	printp("[%d", nums2[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums2[i]);
+	printp("]\n");
+
+	printp("\n");
+
+	printp("Array after Insertion Sort (ascending):\n");
+	insertionSortAsc(nums2, numSize);
+	printp("[%d", nums2[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums2[i]);
+	printp("]\n");
+
+	printp("\n");
+
+
+	printp("Array after Insertion Sort (descending):\n");
+	bubbleSortDesc(nums1, numSize);
+	printp("[%d", nums1[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
+	printp("]\n");
+
+	printp("\n");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	int nums3[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int nums4[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int nums5[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int nums6[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+	int nums7[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+
+
+
+
+
+
+
+
+
+
 
 
 }
