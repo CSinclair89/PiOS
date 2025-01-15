@@ -52,6 +52,7 @@ void kernel_main() {
 /*
  * End Page Frame Allocator
  */
+/*
 	printp("Data Structure Tests\n\n");
 	listTests();
 	printp("\n");
@@ -69,21 +70,19 @@ void kernel_main() {
 	printp("\n");
 
 	vectorTests();
+*/
 
-	int digit = 8;
-	int *ptr = &digit;
-	char str[] = "hello";
-	printp("Testing printp with digit %d, string: %s, and address: 0x%x\n", digit, str, ptr);
-	printv("Testing printv with digit %d, string: %s, and address: 0x%x\n", digit, str, ptr);
-	
-//	printp("Algorithm Tests\n\n");
+	printp("Algorithm Tests\n\n");
+	duplicateNumTest();
+	printp("\n");
 	twoSumTest();
 	printp("\n");
 
+/*
 	printp("Object Tests\n\n");
 	stringTests();
 	printp("\n");
-
+*/
 /*
 	printp("MMU Test\n\n");
 	mmuTests();

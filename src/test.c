@@ -662,6 +662,32 @@ void vectorTests() {
  * Algorithm Tests
  */
 
+void arraySortTests() {
+
+	int nums[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
+
+
+}
+
+void duplicateNumTest() {
+	printp("--DUPLICATE NUMBER TEST--\n\n");
+
+	int numsTrue[10] = {6, 2, 88, 45, 98, 52, 88, 41, 7, 19};
+	int numSize1 = sizeof(numsTrue) / sizeof(numsTrue[0]);
+	printp("Testing array where condition should be true ('cannot add'):\n");
+	duplicateNum(numsTrue, numSize1);
+
+	printp("\n");
+
+	int numsFalse[10] = {5, 1, 16, 78, 90, 55, 25, 54, 23, 20};
+	int numSize2 = sizeof(numsFalse) / sizeof(numsFalse[0]);
+	printp("Testing array where condition should be false (no output = success):\n");
+	duplicateNum(numsFalse, numSize2);
+
+	printp("\n");
+
+	printp("Duplicate Number test complete.\n\n");
+}
 
 void twoSumTest() {
 

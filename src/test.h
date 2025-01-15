@@ -15,6 +15,8 @@ void treeTests();
 void vectorTests();
 
 // algorithms
+void arraySortTests();
+void duplicateNumTest();
 void twoSumTest();
 
 // objects
