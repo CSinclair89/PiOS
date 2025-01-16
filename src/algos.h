@@ -16,6 +16,7 @@ void quickSort(int * nums, int numSize);
  */
 
 int binarySearch(int *nums, int numSize, int target);
+int binarySearch2D(int nums[][10], int rows, int cols, int target);
 
 /*
  * HashSet

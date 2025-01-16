@@ -798,7 +798,48 @@ void arraySearchTests() {
 	binarySearch(nums1, numSize, 92);
 
 	printp("\n");
+
+	int nums2[3][10] = {
+		{8, 91, 67, 34, 52, 1, 50, 66, 17, 64}, 
+		{16, 81, 96, 103, 3, 67, 15, 89, 77, 84}, 
+		{99, 104, 13, 42, 78, 63, 56, 11, 15, 75}
+	};
+
+	int rows = 3;
+	int cols = 10;
+
+	printp("2D array before sorting: \n");
+
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols ; j++) {
+			if (j == 0) printp("[%d", nums2[i][j]);
+			else printp(", %d", nums2[i][j]);
+		}
+		printp("]\n");
+	}
+
+	printp("\n");
+
+	// sorting each row
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols ; j++) bubbleSortAsc(nums2[i], cols);
+	}
+
+	printp("2D array after sorting: \n");
 	
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols ; j++) {
+			if (j == 0) printp("[%d", nums2[i][j]);
+			else printp(", %d", nums2[i][j]);
+		}
+		printp("]\n");
+	}
+
+	printp("\n");
+
+	binarySearch2D(nums2, rows, cols, 16);
+
+	printp("\n");	
 }
 
 void duplicateNumTest() {

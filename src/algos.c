@@ -88,6 +88,33 @@ int binarySearch(int *nums, int numSize, int target) {
 	return 0;
 }
 
+int binarySearch2D(int nums[][10], int rows, int cols, int target) {
+
+	int isAscending = nums[0][0] < nums[0][cols - 1];
+        if (isAscending) printp("Array is sorted is ascending order.\n");
+        else printp("Array is sorted in descending order.\n");
+
+        for (int i = 0; i < cols; i++) {
+                int l = 0, r = cols;
+
+                while (l < r) {
+                        int m = (l + r) / 2;
+                        if (target == nums[i][m]) {
+                                printp("Target (%d) found at index [%d][%d]\n", target, i, m);
+                                return 1;
+                        }
+                        if (isAscending) {
+                                if (target > nums[i][m]) l = m + 1;
+                                else r = m;
+                        } else {
+                                if (target > nums[i][m]) r = m;
+                                else l = m + 1;
+                        }
+                }
+        }
+	printp("Did not find element %d in the array.\n", target);
+	return 0;
+}
 /*
  * HashSet
  */
