@@ -718,27 +718,42 @@ void arraySortTests() {
 
 	printp("\n");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	int nums3[10] = {7, 9, 6, 54, 52, 171, 550, 366, 217, 4};
+
+	printp("Testing Quick Sort w/ unsorted array:\n");
+	printp("[%d", nums3[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
+	printp("]\n\n");
+
+	printp("Array after Quick Sort (ascending):\n");
+	quickSortAsc(nums3, 0, numSize);
+	printp("[%d", nums3[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
+	printp("]\n\n");
+
+	printp("Array after Quick Sort (descending):\n");
+	quickSortDesc(nums3, 0, numSize);
+	printp("[%d", nums3[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
+	printp("]\n");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	int nums4[10] = {52, 917, 34, 32, 14, 30, 69, 117, 634};
 	int nums5[10] = {13, 431, 47, 14, 502, 17, 20, 42, 56, 61};
 	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};

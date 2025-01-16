@@ -1,6 +1,7 @@
 #include "string.h"
 #include "ds.h"
 #include "io.h"
+#include "algos.h"
 
 /*
  * Array Sort
@@ -32,7 +33,7 @@ void bubbleSortDesc(int *nums, int numSize) {
 	return;
 }
 
-// Time complexity: worst case O(N^2), best case O(N)
+// Stable - Time complexity: worst case O(N^2), best case O(N)
 void insertionSortAsc(int *nums, int numSize) {
 	for (int i = 1; i < numSize; i++) {
 		int j = i - 1;
@@ -46,7 +47,7 @@ void insertionSortAsc(int *nums, int numSize) {
 	return;			       
 }
 
-// Time complexity: worst case O(N^2), best case O(N)
+// Stable - Time complexity: worst case O(N^2), best case O(N)
 void insertionSortDesc(int *nums, int numSize) {
 	for (int i = 1; i < numSize; i++) {
 		int j = i - 1;
@@ -59,6 +60,72 @@ void insertionSortDesc(int *nums, int numSize) {
 	}
 	return;			       
 }
+
+// Stable - Time complexity: worse case 0(nlogn)
+void mergeSortAsc(int *nums, int start, int end) {
+	if (end - start + 1 <= 0) return;
+	
+
+}
+
+
+void mergeSortDesc(int *nums, int start, int end) {
+
+
+}
+
+// Time complexity - 
+void quickSortAsc(int *nums, int start, int end){
+	if (start >= end) return;
+	int pivot = partitionAsc(nums, start, end);
+	quickSortAsc(nums, start, pivot - 1);
+	quickSortAsc(nums, pivot + 1, end);
+}
+
+int partitionAsc(int *nums, int start, int end) {
+	int pivot = nums[end];
+	int i = start - 1;
+	for (int j = start; j <= end - 1; j++) {
+		if (nums[j] < pivot) {
+			i++;
+			int tmp = nums[i];
+			nums[i] = nums[j];
+			nums[j] = tmp;
+		}
+	}
+	i++;
+	int tmp = nums[i];
+	nums[i] = nums[end];
+	nums[end] = tmp;
+	return i;
+}
+
+void quickSortDesc(int *nums, int start, int end){
+	if (start >= end) return;
+	int pivot = partitionDesc(nums, start, end);
+	quickSortDesc(nums, start, pivot - 1);
+	quickSortDesc(nums, pivot + 1, end);
+}
+
+int partitionDesc(int *nums, int start, int end) {
+	int pivot = nums[end];
+	int i = start - 1;
+	for (int j = start; j <= end - 1; j++) {
+		if (nums[j] > pivot) {
+			i++;
+			int tmp = nums[i];
+			nums[i] = nums[j];
+			nums[j] = tmp;
+		}
+	}
+	i++;
+	int tmp = nums[i];
+	nums[i] = nums[end];
+	nums[end] = tmp;
+	return i;
+}
+
+
 /*
  * Array Search
  */
@@ -91,7 +158,7 @@ int binarySearch(int *nums, int numSize, int target) {
 int binarySearch2D(int nums[][10], int rows, int cols, int target) {
 
 	int isAscending = nums[0][0] < nums[0][cols - 1];
-        if (isAscending) printp("Array is sorted is ascending order.\n");
+        if (isAscending) printp("Array is sorted in ascending order.\n");
         else printp("Array is sorted in descending order.\n");
 
         for (int i = 0; i < cols; i++) {
