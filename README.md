@@ -29,7 +29,7 @@ This repository, which began as a forked class project, has evolved to serve mor
 1. [x] Bubble Sort
 2. [x] Insertion Sort
 3. [ ] Deletion Sort
-4. [ ] Quick Sort
+4. [x] Quick Sort
 5. [ ] Merge Sort
 6. [ ] Bucket Sort
 7. [x] Binary Search
