@@ -727,19 +727,19 @@ void arraySortTests() {
 	printp("]\n\n");
 
 	printp("Array after Quick Sort (ascending):\n");
-	quickSort(nums3, 0, numSize, "asc");
+	quickSort(nums3, 0, numSize - 1, "asc");
 	printp("[%d", nums3[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
 	printp("]\n\n");
 
 	printp("Array after Quick Sort (descending):\n");
-	quickSort(nums3, 0, numSize, "desc");
+	quickSort(nums3, 0, numSize - 1, "desc");
 	printp("[%d", nums3[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
 	printp("]\n\n");
 
 	printp("Array after Quick Sort (testing error msg):\n");
-	quickSort(nums3, 0, numSize, "asdfasdf");
+	quickSort(nums3, 0, numSize - 1, "asdfasdf");
 
 	printp("\n");
 
