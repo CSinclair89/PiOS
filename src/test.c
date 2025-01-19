@@ -668,33 +668,32 @@ void arraySortTests() {
 
 	int nums1[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
 	int numSize = sizeof(nums1) / sizeof(nums1[0]);
-
-	printp("Testing Bubble Sort w/ unsorted array:\n");
+	
+	printp("Testing Bubble Sort (with goto) w/ unsorted array:\n");
 	printp("[%d", nums1[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
-	printp("]\n");
-
-	printp("\n");
-
+	printp("]\n\n");
+	
 	printp("Array after Bubble Sort (ascending):\n");
-	bubbleSortAsc(nums1, numSize);
+	bubbleSort(nums1, numSize, "asc");
 	printp("[%d", nums1[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
-	printp("]\n");
-
-	printp("\n");
+	printp("]\n\n");
 
 	printp("Array after Bubble Sort (descending):\n");
-	bubbleSortDesc(nums1, numSize);
+	bubbleSort(nums1, numSize, "desc");
 	printp("[%d", nums1[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
-	printp("]\n");
+	printp("]\n\n");
+
+	printp("Array after Bubble Sort (testing error msg):\n");
+	bubbleSort(nums1, numSize, "asdfasdf");
 
 	printp("\n");
 
 	int nums2[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
 
-	printp("Testing Insertion Sort w/ unsorted array:\n");
+	printp("Testing Insertion Sort (with goto) w/ unsorted array:\n");
 	printp("[%d", nums2[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums2[i]);
 	printp("]\n");
@@ -702,59 +701,54 @@ void arraySortTests() {
 	printp("\n");
 
 	printp("Array after Insertion Sort (ascending):\n");
-	insertionSortAsc(nums2, numSize);
+	insertionSort(nums2, numSize, "asc");
 	printp("[%d", nums2[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums2[i]);
 	printp("]\n");
 
 	printp("\n");
 
-
 	printp("Array after Insertion Sort (descending):\n");
-	bubbleSortDesc(nums1, numSize);
+	insertionSort(nums1, numSize, "desc");
 	printp("[%d", nums1[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
-	printp("]\n");
+	printp("]\n\n");
+
+	printp("Array after Insertion Sort (testing error msg):\n");
+	bubbleSort(nums2, numSize, "asdfasdf");
 
 	printp("\n");
 
 	int nums3[10] = {7, 9, 6, 54, 52, 171, 550, 366, 217, 4};
 
-	printp("Testing Quick Sort w/ unsorted array:\n");
+	printp("Testing Quick Sort (with goto) w/ unsorted array:\n");
 	printp("[%d", nums3[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
 	printp("]\n\n");
 
 	printp("Array after Quick Sort (ascending):\n");
-	quickSortAsc(nums3, 0, numSize);
+	quickSort(nums3, 0, numSize, "asc");
 	printp("[%d", nums3[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
 	printp("]\n\n");
 
 	printp("Array after Quick Sort (descending):\n");
-	quickSortDesc(nums3, 0, numSize);
+	quickSort(nums3, 0, numSize, "desc");
 	printp("[%d", nums3[0]);
 	for (int i = 1; i < numSize; i++) printp(", %d", nums3[i]);
-	printp("]\n");
+	printp("]\n\n");
+
+	printp("Array after Quick Sort (testing error msg):\n");
+	quickSort(nums3, 0, numSize, "asdfasdf");
+
+	printp("\n");
 
 
 
 
 
+	int nums4[10] = {52, 917, 34, 32, 14, 30, 69, 117, 634, 54};
 
-
-
-
-
-
-
-
-
-
-
-
-
-	int nums4[10] = {52, 917, 34, 32, 14, 30, 69, 117, 634};
 	int nums5[10] = {13, 431, 47, 14, 502, 17, 20, 42, 56, 61};
 	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};
 	int nums7[10] = {66, 4, 32, 34, 532, 10, 58, 31, 98, 2};
@@ -779,7 +773,7 @@ void arraySearchTests() {
 
 	int nums1[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
 	int numSize = sizeof(nums1) / sizeof(nums1[0]);
-	bubbleSortAsc(nums1, numSize);
+	bubbleSort(nums1, numSize, "asc");
 
 	printp("Binary Search -- looking for element %d in ascending array (present):\n", 34);
 	printp("[%d", nums1[0]);
@@ -794,7 +788,7 @@ void arraySearchTests() {
 
 	binarySearch(nums1, numSize, 92);
 	
-	bubbleSortDesc(nums1, numSize);
+	bubbleSort(nums1, numSize, "desc");
 
 	printp("\n");
 
@@ -837,7 +831,7 @@ void arraySearchTests() {
 
 	// sorting each row
 	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols ; j++) bubbleSortAsc(nums2[i], cols);
+		for (int j = 0; j < cols ; j++) bubbleSort(nums2[i], cols, "asc");
 	}
 
 	printp("2D array after sorting: \n");

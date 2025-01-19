@@ -5,16 +5,11 @@
  * Array Sort
  */
 
-void bubbleSortAsc(int *nums, int numSize);
-void bubbleSortDesc(int *nums, int numSize);
-void insertionSortAsc(int *nums, int numSize);
-void insertionSortDesc(int *nums, int numSize);
+void bubbleSort(int *nums, int numSize, char *pref);
+void insertionSort(int *nums, int numSize, char *pref);
+void quickSort(int *nums, int start, int end, char *pref);
 void mergeSortAsc(int *nums, int start, int end);
 void mergeSortDesc(int *nums, int start, int end);
-void quickSortAsc(int * nums, int start, int end);
-int partitionAsc(int *nums, int start, int end);
-void quickSortDesc(int * nums, int start, int end);
-int partitionDesc(int *nums, int start, int end);
 
 /*
  * Array Search

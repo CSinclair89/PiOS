@@ -7,7 +7,16 @@
  * Array Sort
  */
 
-void bubbleSortAsc(int *nums, int numSize) {
+void bubbleSort(int *nums, int numSize, char *pref) {
+	
+	if (strEqual(pref, "asc")) goto asc;
+	else if (strEqual(pref, "desc")) goto desc;
+	else {
+		printp("Invalid input argument.\n");
+		return;
+	}
+	
+	asc:
 	for (int i = 0; i < numSize; i++) {
 		for (int j = 0; j < numSize - i - 1; j++) {
 			if (nums[j] > nums[j + 1]) {
@@ -17,10 +26,9 @@ void bubbleSortAsc(int *nums, int numSize) {
 			}
 		}
 	}
-	return;
-}
+	goto exit;
 
-void bubbleSortDesc(int *nums, int numSize) {
+	desc:
 	for (int i = 0; i < numSize; i++) {
 		for (int j = 0; j < numSize - i - 1; j++) {
 			if (nums[j] < nums[j + 1]) {
@@ -30,11 +38,22 @@ void bubbleSortDesc(int *nums, int numSize) {
 			}
 		}
 	}
+
+	exit:
 	return;
 }
 
 // Stable - Time complexity: worst case O(N^2), best case O(N)
-void insertionSortAsc(int *nums, int numSize) {
+void insertionSort(int *nums, int numSize, char *pref) {
+	
+	if (strEqual(pref, "asc")) goto asc;
+	else if (strEqual(pref, "desc")) goto desc;
+	else {
+		printp("Invalid input argument.\n");
+		return;
+	}
+
+	asc:
 	for (int i = 1; i < numSize; i++) {
 		int j = i - 1;
 		while (j >= 0 && nums[j + 1] < nums[j]) {
@@ -44,11 +63,9 @@ void insertionSortAsc(int *nums, int numSize) {
 			j--;
 		}
 	}
-	return;			       
-}
+	goto exit;
 
-// Stable - Time complexity: worst case O(N^2), best case O(N)
-void insertionSortDesc(int *nums, int numSize) {
+	desc:
 	for (int i = 1; i < numSize; i++) {
 		int j = i - 1;
 		while (j >= 0 && nums[j + 1] > nums[j]) {
@@ -58,10 +75,66 @@ void insertionSortDesc(int *nums, int numSize) {
 			j--;
 		}
 	}
-	return;			       
+	
+	exit:
+	return;
 }
 
-// Stable - Time complexity: worse case 0(nlogn)
+void quickSort(int *nums, int start, int end, char *pref) {
+	
+	if (strEqual(pref, "asc")) goto asc;
+	else if (strEqual(pref, "desc")) goto desc;
+	else {
+		printp("Invalid input argument.\n");
+		return;
+	}
+
+	asc:
+	if (end - start + 1 <= 1) return;
+
+	int pivotAsc = nums[end];
+	int leftAsc = start;
+
+	for (int i = start; i < end; i++) {
+	       if (nums[i] < pivotAsc) {
+		       int tmp = nums[leftAsc];
+		       nums[leftAsc] = nums[i];
+		       nums[i] = tmp;
+		       leftAsc++;
+	       }
+	}
+	nums[end] = nums[leftAsc];
+	nums[leftAsc] = pivotAsc;
+
+	quickSort(nums, start, leftAsc - 1, "asc");
+	quickSort(nums, leftAsc + 1, end, "asc");
+	goto exit;
+
+	desc:
+	if (end - start + 1 <= 1) return;
+
+	int pivotDesc = nums[end];
+	int leftDesc = start;
+
+	for (int i = start; i < end; i++) {
+	       if (nums[i] > pivotDesc) {
+		       int tmp = nums[leftDesc];
+		       nums[leftDesc] = nums[i];
+		       nums[i] = tmp;
+		       leftDesc++;
+	       }
+	}
+	nums[end] = nums[leftDesc];
+	nums[leftDesc] = pivotDesc;
+
+	quickSort(nums, start, leftDesc - 1, "desc");
+	quickSort(nums, leftDesc + 1, end, "desc");
+
+	exit:
+	return;
+}
+
+// Stable - Time complexity: worst case 0(nlogn)
 void mergeSortAsc(int *nums, int start, int end) {
 	if (end - start + 1 <= 0) return;
 	
@@ -73,59 +146,6 @@ void mergeSortDesc(int *nums, int start, int end) {
 
 
 }
-
-// Time complexity - 
-void quickSortAsc(int *nums, int start, int end){
-	if (start >= end) return;
-	int pivot = partitionAsc(nums, start, end);
-	quickSortAsc(nums, start, pivot - 1);
-	quickSortAsc(nums, pivot + 1, end);
-}
-
-int partitionAsc(int *nums, int start, int end) {
-	int pivot = nums[end];
-	int i = start - 1;
-	for (int j = start; j <= end - 1; j++) {
-		if (nums[j] < pivot) {
-			i++;
-			int tmp = nums[i];
-			nums[i] = nums[j];
-			nums[j] = tmp;
-		}
-	}
-	i++;
-	int tmp = nums[i];
-	nums[i] = nums[end];
-	nums[end] = tmp;
-	return i;
-}
-
-void quickSortDesc(int *nums, int start, int end){
-	if (start >= end) return;
-	int pivot = partitionDesc(nums, start, end);
-	quickSortDesc(nums, start, pivot - 1);
-	quickSortDesc(nums, pivot + 1, end);
-}
-
-int partitionDesc(int *nums, int start, int end) {
-	int pivot = nums[end];
-	int i = start - 1;
-	for (int j = start; j <= end - 1; j++) {
-		if (nums[j] > pivot) {
-			i++;
-			int tmp = nums[i];
-			nums[i] = nums[j];
-			nums[j] = tmp;
-		}
-	}
-	i++;
-	int tmp = nums[i];
-	nums[i] = nums[end];
-	nums[end] = tmp;
-	return i;
-}
-
-
 /*
  * Array Search
  */

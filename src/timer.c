@@ -11,7 +11,7 @@ unsigned long getTimerCount() {
 // Method to wait for a few seconds
 void waitFor(unsigned long toc) {
         unsigned long tic = getTimerCount();
-        toc = tic + toc;
+        toc += tic;
 
         while (getTimerCount() < toc) {}
 }

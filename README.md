@@ -29,13 +29,14 @@ This repository, which began as a forked class project, has evolved to serve mor
 1. [x] Bubble Sort
 2. [x] Insertion Sort
 3. [ ] Deletion Sort
-4. [x] Quick Sort
-5. [ ] Merge Sort
-6. [ ] Bucket Sort
-7. [x] Binary Search
-8. [x] 2D Binary Search
-9. [ ] Depth-First Search (DFS)
-10. [ ] Breadth-First Search (BFS)
+4. [ ] Selection Sort
+5. [x] Quick Sort
+6. [ ] Merge Sort
+7. [ ] Bucket Sort
+8. [x] Binary Search
+9. [x] 2D Binary Search
+10. [ ] Depth-First Search (DFS)
+11. [ ] Breadth-First Search (BFS)
 
 #### Coding Challenges w/ Data Structures:
 1. HashMap
