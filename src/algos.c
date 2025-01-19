@@ -81,7 +81,8 @@ void insertionSort(int *nums, int numSize, char *pref) {
 }
 
 void quickSort(int *nums, int start, int end, char *pref) {
-	
+
+	// Logic Header	
 	if (strEqual(pref, "asc")) goto asc;
 	else if (strEqual(pref, "desc")) goto desc;
 	else {
