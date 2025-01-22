@@ -135,6 +135,51 @@ void quickSort(int *nums, int start, int end, char *pref) {
 	return;
 }
 
+void selectionSort(int *nums, int numSize, char *pref) {
+	
+	if (strEqual(pref, "asc")) goto asc;
+	else if (strEqual(pref, "desc")) goto desc;
+	else {
+		printp("Invalid input argument.\n");
+		return;
+	}
+
+	asc:
+	for (int i = 0; i < numSize - 1; i++) {
+		int min = i;
+		for (int j = i + 1; j < numSize; j++) {
+			if (nums[min] > nums[j]) min = j;
+		}
+		int tmp = nums[i];
+		nums[i] = nums[min];
+		nums[min] = tmp;
+	}
+	goto exit;
+
+	desc:
+	for (int i = 0; i < numSize - 1; i++) {
+		int max = i;
+		for (int j = i + 1; j < numSize; j++) {
+			if (nums[max] < nums[j]) max = j;
+		}
+		int tmp = nums[i];
+		nums[i] = nums[max];
+		nums[max] = tmp;
+	}
+
+	exit:
+	return;
+}
+
+
+void deletionSort(int *nums, int numSize, char *pref) {
+
+
+
+}
+
+
+
 // Stable - Time complexity: worst case 0(nlogn)
 void mergeSortAsc(int *nums, int start, int end) {
 	if (end - start + 1 <= 0) return;

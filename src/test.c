@@ -666,6 +666,7 @@ void arraySortTests() {
 
 	printp("--ARRAY SORTING TESTS--\n\n");
 
+	// Bubble Sort
 	int nums1[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
 	int numSize = sizeof(nums1) / sizeof(nums1[0]);
 	
@@ -691,6 +692,7 @@ void arraySortTests() {
 
 	printp("\n");
 
+	// Insertion Sort
 	int nums2[10] = {8, 91, 67, 34, 52, 1, 50, 66, 17, 64};
 
 	printp("Testing Insertion Sort (with goto) w/ unsorted array:\n");
@@ -719,6 +721,7 @@ void arraySortTests() {
 
 	printp("\n");
 
+	// Quick Sort
 	int nums3[10] = {7, 9, 6, 54, 52, 171, 550, 366, 217, 4};
 
 	printp("Testing Quick Sort (with goto) w/ unsorted array:\n");
@@ -743,11 +746,33 @@ void arraySortTests() {
 
 	printp("\n");
 
-
-
-
-
+	// Selection Sort
 	int nums4[10] = {52, 917, 34, 32, 14, 30, 69, 117, 634, 54};
+
+	printp("Selection Sort test, initial array:\n");
+	printp("[%d", nums4[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums4[i]);
+	printp("]\n\n");
+
+	printp("Selection Sort test, array after sort ascending:\n");
+	selectionSort(nums4, numSize, "asc");
+	printp("[%d", nums4[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums4[i]);
+	printp("]\n\n");
+
+	printp("Selection Sort test, array after sort descending:\n");
+	selectionSort(nums4, numSize, "desc");
+	printp("[%d", nums4[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums4[i]);
+	printp("]\n\n");
+
+	printp("Selection sort test, array after triggering error msg:\n");
+	selectionSort(nums4, numSize, "aasdfasdf");
+
+
+
+
+
 
 	int nums5[10] = {13, 431, 47, 14, 502, 17, 20, 42, 56, 61};
 	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};
