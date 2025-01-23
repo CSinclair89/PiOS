@@ -172,13 +172,6 @@ void selectionSort(int *nums, int numSize, char *pref) {
 }
 
 
-void deletionSort(int *nums, int numSize, char *pref) {
-
-
-
-}
-
-
 
 // Stable - Time complexity: worst case 0(nlogn)
 void mergeSortAsc(int *nums, int start, int end) {

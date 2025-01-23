@@ -9,11 +9,9 @@ void bubbleSort(int *nums, int numSize, char *pref);
 void insertionSort(int *nums, int numSize, char *pref);
 void deletionSort(int *nums, int numSize, char *pref);
 void selectionSort(int *nums, int numSize, char *pref);
+
 void quickSort(int *nums, int start, int end, char *pref);
 
-void bubbleSort2(int *nums, int numSize, char *pref);
-void insertionSort2(int *nums, int numSize, char *pref);
-void quickSort2(int *nums, int numSize, char *pref);
 
 void mergeSortAsc(int *nums, int start, int end);
 void mergeSortDesc(int *nums, int start, int end);
