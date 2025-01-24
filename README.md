@@ -56,7 +56,7 @@ This repository, which began as a forked class project, has evolved to serve mor
    * [ ] Last Stone Weight
 
 #### Implement createProcess() "system call"
-- Final project involved implementing a system call into the Linux kernel. I chose to focus on the Windows function, CreateProcess(), which combines fork() and exec(). The full paper on that can be found here: https://chrisso.tv/pdf/createProcess.pdf
+- Final project involved implementing a system call into the Linux kernel. I chose to focus on the Windows function, CreateProcess(), which combines fork() and exec(). The repository (including a link to the paper) can be found here: https://github.com/CSinclair89/createProcess
 
 #### Perhaps make some small games that utilize the aforementioned data structures and algorithms?
 
