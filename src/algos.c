@@ -7,7 +7,7 @@
  * Array Sort
  */
 
-void bubbleSort(int *nums, int numSize, char *pref) {
+void bubbleSort(int *nums, unsigned int len, char *pref) {
 	
 	if (strEqual(pref, "asc")) goto asc;
 	else if (strEqual(pref, "desc")) goto desc;
@@ -17,8 +17,8 @@ void bubbleSort(int *nums, int numSize, char *pref) {
 	}
 	
 	asc:
-	for (int i = 0; i < numSize; i++) {
-		for (int j = 0; j < numSize - i - 1; j++) {
+	for (int i = 0; i < len; i++) {
+		for (int j = 0; j < len - i - 1; j++) {
 			if (nums[j] > nums[j + 1]) {
 				int tmp = nums[j];
 				nums[j] = nums[j + 1];
@@ -29,8 +29,8 @@ void bubbleSort(int *nums, int numSize, char *pref) {
 	goto exit;
 
 	desc:
-	for (int i = 0; i < numSize; i++) {
-		for (int j = 0; j < numSize - i - 1; j++) {
+	for (int i = 0; i < len; i++) {
+		for (int j = 0; j < len - i - 1; j++) {
 			if (nums[j] < nums[j + 1]) {
 				int tmp = nums[j];
 				nums[j] = nums[j + 1];
@@ -44,7 +44,7 @@ void bubbleSort(int *nums, int numSize, char *pref) {
 }
 
 // Stable - Time complexity: worst case O(N^2), best case O(N)
-void insertionSort(int *nums, int numSize, char *pref) {
+void insertionSort(int *nums, unsigned int len, char *pref) {
 	
 	if (strEqual(pref, "asc")) goto asc;
 	else if (strEqual(pref, "desc")) goto desc;
@@ -54,7 +54,7 @@ void insertionSort(int *nums, int numSize, char *pref) {
 	}
 
 	asc:
-	for (int i = 1; i < numSize; i++) {
+	for (int i = 1; i < len; i++) {
 		int j = i - 1;
 		while (j >= 0 && nums[j + 1] < nums[j]) {
 			int tmp = nums[j + 1];
@@ -66,7 +66,7 @@ void insertionSort(int *nums, int numSize, char *pref) {
 	goto exit;
 
 	desc:
-	for (int i = 1; i < numSize; i++) {
+	for (int i = 1; i < len; i++) {
 		int j = i - 1;
 		while (j >= 0 && nums[j + 1] > nums[j]) {
 			int tmp = nums[j + 1];
@@ -135,7 +135,7 @@ void quickSort(int *nums, int start, int end, char *pref) {
 	return;
 }
 
-void selectionSort(int *nums, int numSize, char *pref) {
+void selectionSort(int *nums, unsigned int len, char *pref) {
 	
 	if (strEqual(pref, "asc")) goto asc;
 	else if (strEqual(pref, "desc")) goto desc;
@@ -145,9 +145,9 @@ void selectionSort(int *nums, int numSize, char *pref) {
 	}
 
 	asc:
-	for (int i = 0; i < numSize - 1; i++) {
+	for (int i = 0; i < len - 1; i++) {
 		int min = i;
-		for (int j = i + 1; j < numSize; j++) {
+		for (int j = i + 1; j < len; j++) {
 			if (nums[min] > nums[j]) min = j;
 		}
 		int tmp = nums[i];
@@ -157,9 +157,9 @@ void selectionSort(int *nums, int numSize, char *pref) {
 	goto exit;
 
 	desc:
-	for (int i = 0; i < numSize - 1; i++) {
+	for (int i = 0; i < len - 1; i++) {
 		int max = i;
-		for (int j = i + 1; j < numSize; j++) {
+		for (int j = i + 1; j < len; j++) {
 			if (nums[max] < nums[j]) max = j;
 		}
 		int tmp = nums[i];
@@ -189,9 +189,9 @@ void mergeSortDesc(int *nums, int start, int end) {
  * Array Search
  */
 
-int binarySearch(int *nums, int numSize, int target) {
-	int l = 0, r = numSize;
-	int isAscending = nums[0] < nums[numSize - 1];
+int binarySearch(int *nums, unsigned int len, int target) {
+	int l = 0, r = len;
+	int isAscending = nums[0] < nums[len - 1];
 
 	if (isAscending) printp("Array is sorted ascending.\n");
 	else printp("Array is sorted descending.\n");
@@ -245,22 +245,22 @@ int binarySearch2D(int nums[][10], int rows, int cols, int target) {
  * HashSet
  */
 
-void duplicateNum(int *nums, int numSize) {
+void duplicateNum(int *nums, unsigned int len) {
 	HashSet set;
 	setInit(&set);
-	for (int i = 0; i < numSize; i++) setAdd(&set, nums[i]);
+	for (int i = 0; i < len; i++) setAdd(&set, nums[i]);
 }
 
 /*
  * HashMap
  */
 
-int* twoSum(int *nums, int numSize, int target, char *key, char *diffStr) {
+int* twoSum(int *nums, unsigned int len, int target, char *key, char *diffStr) {
 
 	HashMap map;
 	hashmapInit(&map);
 
-        for (int i = 0; i < numSize; i++) {
+        for (int i = 0; i < len; i++) {
                 int diff = target - nums[i];
 
                 // convert diff to a string
