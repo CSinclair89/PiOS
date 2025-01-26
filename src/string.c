@@ -1,4 +1,5 @@
 #include "string.h"
+#include "io.h"
 
 int strEqual(const char *str1, const char *str2) {
         while (*str1 && (*str1 == *str2)) {
@@ -70,6 +71,14 @@ void strToUpper(char *src) {
 		if (src[i] >= 'a' && src[i] <= 'z') src[i] -= CASE_DIFF;
 	}
 	return;
+}
+
+void arrayToString(int *nums, unsigned int len) {
+
+	printp("[%d", nums[0]);
+	for (int i = 1; i < len; i++) printp(", %d", nums[i]);
+	printp("]\n\n");
+
 }
 
 

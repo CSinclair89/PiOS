@@ -671,9 +671,7 @@ void arraySortTests() {
 	int numSize = sizeof(nums1) / sizeof(nums1[0]);
 	
 	printp("Testing Bubble Sort (with goto) w/ unsorted array:\n");
-	printp("[%d", nums1[0]);
-	for (int i = 1; i < numSize; i++) printp(", %d", nums1[i]);
-	printp("]\n\n");
+	arrayToString(nums1, numSize);	
 	
 	printp("Array after Bubble Sort (ascending):\n");
 	bubbleSort(nums1, numSize, "asc");

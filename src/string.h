@@ -10,5 +10,6 @@ int strToInt(const char *str);
 void strReplace(char *src, char oldChar, char newChar);
 void strToLower(char *src);
 void strToUpper(char *src);
+void arrayToString(int *nums, unsigned int len);
 
 #endif
