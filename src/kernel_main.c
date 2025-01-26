@@ -75,7 +75,7 @@ void kernel_main() {
 	printp("Algorithm Tests\n\n");
 	arraySortTests();
 	printp("\n");
-//	arraySearchTests();
+	arraySearchTests();
 	printp("\n");
 /*
 	duplicateNumTest();

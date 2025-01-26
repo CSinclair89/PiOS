@@ -11,5 +11,6 @@ void strReplace(char *src, char oldChar, char newChar);
 void strToLower(char *src);
 void strToUpper(char *src);
 void arrayToString(int *nums, unsigned int len);
+void array2DToString(int nums[3][10], unsigned int rows, unsigned int cols);
 
 #endif

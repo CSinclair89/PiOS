@@ -81,5 +81,15 @@ void arrayToString(int *nums, unsigned int len) {
 
 }
 
+void array2DToString(int nums[3][10], unsigned int rows, unsigned int cols) {
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			if (j == 0) printp("[%d", nums[i][j]);
+			else printp(", %d", nums[i][j]);
+		}
+		printp("]\n");
+	}
+}
+
 
 

@@ -841,14 +841,7 @@ void arraySearchTests() {
 	int cols = 10;
 
 	printp("2D array before sorting: \n");
-
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols ; j++) {
-			if (j == 0) printp("[%d", nums2[i][j]);
-			else printp(", %d", nums2[i][j]);
-		}
-		printp("]\n");
-	}
+	array2DToString(nums2, 3, 10);
 
 	printp("\n");
 
@@ -858,14 +851,7 @@ void arraySearchTests() {
 	}
 
 	printp("2D array after sorting: \n");
-	
-	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols ; j++) {
-			if (j == 0) printp("[%d", nums2[i][j]);
-			else printp(", %d", nums2[i][j]);
-		}
-		printp("]\n");
-	}
+	array2DToString(nums2, 3, 10);
 
 	printp("\n");
 
