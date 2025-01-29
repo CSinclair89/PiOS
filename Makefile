@@ -33,6 +33,7 @@ OBJS = \
 	tree.o \
 	mem.o \
 	io.o \
+	quirks.o \
 
 
 OBJ = $(patsubst %,$(ODIR)/%,$(OBJS))

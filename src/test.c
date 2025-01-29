@@ -935,3 +935,20 @@ void stringTests() {
 
 	printp("\n");
 }
+
+void quirksTest() {
+	printp("--QUIRKS TEST--\n\n");
+
+	printp("Messing with structs (arrow vs. dot operator):\n");
+	structTest();
+
+	printp("\n");
+
+	printp("Messing with reassigning a value to a constant variable:\n");
+	constTest(42);
+
+	printp("\n");
+
+
+}
+

@@ -85,11 +85,13 @@ void kernel_main() {
 	twoSumTest();
 	printp("\n");
 */
-/*
+
 	printp("Object Tests\n\n");
-	stringTests();
+//	stringTests();
 	printp("\n");
-*/
+	quirksTest();
+	printp("\n");
+
 /*
 	printp("MMU Test\n\n");
 	mmuTests();

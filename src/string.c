@@ -74,11 +74,9 @@ void strToUpper(char *src) {
 }
 
 void arrayToString(int *nums, unsigned int len) {
-
 	printp("[%d", nums[0]);
 	for (int i = 1; i < len; i++) printp(", %d", nums[i]);
 	printp("]\n\n");
-
 }
 
 void array2DToString(int nums[3][10], unsigned int rows, unsigned int cols) {
