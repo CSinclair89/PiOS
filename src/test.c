@@ -949,6 +949,15 @@ void quirksTest() {
 
 	printp("\n");
 
+	printp("Messing with array access:\n");
+	arrayAccess();
 
+	printp("\n");
+	printp("\n");
+	printp("\n");
+	printp("\n");
+	printp("\n");
+	printp("\n");
+	printp("\n");
+	printp("\n");
 }
-

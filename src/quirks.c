@@ -38,3 +38,10 @@ void constTest(int val) {
         printp("New value of const int c: %d.\n", c);
 	return;
 }
+
+void arrayAccess() {
+	int arr[10] = {7, 3, 1, 5, 7, 3, 1, 2, 4, 9};
+	printp("Normal array access at arr[7]: %d\n", arr[7]);
+	printp("Weird array access at 7[arr]: %d\n", 7[arr]);
+	printp("^ Fair to say that looks goofy as shit! ^\n");
+}

@@ -3,5 +3,6 @@
 
 void structTest();
 void constTest(int val);
+void arrayAccess();
 
 #endif
