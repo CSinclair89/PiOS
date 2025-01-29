@@ -1,6 +1,17 @@
 #include "quirks.h"
 #include "io.h"
 
+void intOverflow() {
+	int maxInt = 4294967295;
+	printp("Max integer (maxInt): %d\n", maxInt);
+	maxInt += 1;
+	printp("Max integer overflow (maxInt += 1): %d\n", maxInt);
+	printp("Size of max int: %d\n", sizeof(maxInt));
+	// Given that max int is 32-bit signed, it seems like
+	// the compiler sees it as unsigned if there is no negative
+	// so number go bigger
+}
+
 typedef struct Child {
 	int val;
 } Child;

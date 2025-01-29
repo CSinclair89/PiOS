@@ -6,6 +6,7 @@
 #include "page.h"
 #include "mem.h"
 #include "io.h"
+#include "quirks.h"
 
 // mapping
 
@@ -953,6 +954,10 @@ void quirksTest() {
 	arrayAccess();
 
 	printp("\n");
+
+	printp("Messing with integer overflow:\n");
+	intOverflow();
+
 	printp("\n");
 	printp("\n");
 	printp("\n");

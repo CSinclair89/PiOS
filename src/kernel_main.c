@@ -71,12 +71,13 @@ void kernel_main() {
 
 	vectorTests();
 */
-
+/*
 	printp("Algorithm Tests\n\n");
 	arraySortTests();
 	printp("\n");
 	arraySearchTests();
 	printp("\n");
+*/
 /*
 	duplicateNumTest();
 	printp("\n");
