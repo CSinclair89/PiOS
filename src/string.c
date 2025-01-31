@@ -52,6 +52,14 @@ int strToInt(const char *str) {
 	return sign * num;
 }
 
+char *strCat(char *str1, char *str2) {
+	char *res = str1;
+	while (*res) res++;
+	while (*str2) *res++ = *str2++;
+	*res = '\0';
+	return str1;
+}
+
 void strReplace(char *src, char oldChar, char newChar) {
 	for (int i = 0; src[i] != '\0'; i++) {
 		if (src[i] == oldChar) src[i] = newChar;

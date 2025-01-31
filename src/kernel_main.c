@@ -88,7 +88,7 @@ void kernel_main() {
 */
 
 	printp("Object Tests\n\n");
-//	stringTests();
+	stringTests();
 	printp("\n");
 	quirksTest();
 	printp("\n");

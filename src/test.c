@@ -935,6 +935,12 @@ void stringTests() {
 	printp("%s\n", string);
 
 	printp("\n");
+
+	printp("String concatenate:\n");
+	char str1[50] = "Hello, ";
+	char str2[] = "world!";
+	char *newStr = strCat(str1, str2);
+	printp("%s\n", newStr);
 }
 
 void quirksTest() {
