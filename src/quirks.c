@@ -1,5 +1,6 @@
 #include "quirks.h"
 #include "io.h"
+#include <unistd.h>
 
 void intOverflow() {
 	int maxInt = 4294967295;

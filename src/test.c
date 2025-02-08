@@ -7,6 +7,7 @@
 #include "mem.h"
 #include "io.h"
 #include "quirks.h"
+#include "book.h"
 
 // mapping
 
@@ -970,5 +971,12 @@ void quirksTest() {
 	printp("\n");
 	printp("\n");
 	printp("\n");
-	printp("\n");
+}
+
+void bookTests() {
+	printp("-- BOOK TESTS --\n\n");
+
+	tempConversion();
+
+
 }

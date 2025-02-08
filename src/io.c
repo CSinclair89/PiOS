@@ -91,7 +91,7 @@ static void outs(charptr lp) {
  * as directed by the padding and position flags
  */
 
-static void outnum(unsigned int num, const int base) {
+static void outnum(long num, const long base) {
 	charptr cp;
 	int negative;
 	char outbuf[32];
@@ -231,6 +231,9 @@ try_next:
 				case 'n':
 					out_char(0x0D);
 					out_char(0x0A);
+					break;
+				case 't':
+					out_char(0x09);
 					break;
 				default:
 					out_char(*ctrl);

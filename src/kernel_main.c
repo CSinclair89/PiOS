@@ -92,7 +92,8 @@ void kernel_main() {
 	printp("\n");
 	quirksTest();
 	printp("\n");
-
+	bookTests();
+	printp("\n");
 /*
 	printp("MMU Test\n\n");
 	mmuTests();

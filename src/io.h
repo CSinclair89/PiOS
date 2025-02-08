@@ -3,7 +3,7 @@
 
 #include <stdarg.h>
 
-typedef unsigned int size_t;
+typedef long unsigned int size_t;
 typedef char *charptr;
 typedef int (*func_ptr)(int c);
 

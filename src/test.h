@@ -23,5 +23,6 @@ void twoSumTest();
 // objects
 void stringTests();
 void quirksTest();
+void bookTests();
 
 #endif
