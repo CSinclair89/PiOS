@@ -57,3 +57,4 @@ void arrayAccess() {
 	printp("Weird array access at 7[arr]: %d\n", 7[arr]);
 	printp("^ Fair to say that looks goofy as shit! ^\n");
 }
+
