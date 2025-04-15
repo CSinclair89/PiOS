@@ -1,7 +1,7 @@
 #include "rand.h"
 
 /*
- * Psuedo-Random Number Generator (PRNG)
+ * Pseudo-Random Number Generator (PRNG)
  * Linear Congruential Generator (LCG) is a classic, simple PRNG.
  * The formula in this rand() function is based on LCG.
  *
