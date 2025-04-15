@@ -71,13 +71,13 @@ void kernel_main() {
 
 	vectorTests();
 */
-/*
+
 	printp("Algorithm Tests\n\n");
 	arraySortTests();
 	printp("\n");
 	arraySearchTests();
 	printp("\n");
-*/
+
 /*
 	duplicateNumTest();
 	printp("\n");
@@ -86,13 +86,15 @@ void kernel_main() {
 	twoSumTest();
 	printp("\n");
 */
-
+/*
 	printp("Object Tests\n\n");
 	stringTests();
 	printp("\n");
 	quirksTest();
 	printp("\n");
-
+	randTest();
+	printp("\n");
+*/
 /*
 	printp("MMU Test\n\n");
 	mmuTests();

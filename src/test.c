@@ -7,6 +7,7 @@
 #include "mem.h"
 #include "io.h"
 #include "quirks.h"
+#include "rand.h"
 
 // mapping
 
@@ -768,12 +769,36 @@ void arraySortTests() {
 	printp("Selection sort test, array after triggering error msg:\n");
 	selectionSort(nums4, numSize, "aasdfasdf");
 
+	printp("\n");
 
 
 
-
-
+	// Bogo Sort
 	int nums5[10] = {13, 431, 47, 14, 502, 17, 20, 42, 56, 61};
+	
+	
+	printp("Bogo Sort test, initial array:\n");
+	printp("[%d", nums5[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums5[i]);
+	printp("]\n\n");
+
+	printp("Bogo Sort test, array after sort ascending:\n");
+	bogoSort(nums5, numSize, "asc");
+	printp("[%d", nums5[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums5[i]);
+	printp("]\n\n");
+
+	printp("Bogo Sort test, array after sort descending:\n");
+	bogoSort(nums5, numSize, "desc");
+	printp("[%d", nums5[0]);
+	for (int i = 1; i < numSize; i++) printp(", %d", nums5[i]);
+	printp("]\n\n");
+
+	printp("Bogo sort test, array after triggering error msg:\n");
+	bogoSort(nums5, numSize, "aasdfasdf");
+
+
+
 	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};
 	int nums7[10] = {66, 4, 32, 34, 532, 10, 58, 31, 98, 2};
 
@@ -970,4 +995,24 @@ void quirksTest() {
 	printp("\n");
 	printp("\n");
 	printp("\n");
+}
+
+void randTest() {
+	printp("--RANDOM NUMBER TESTS--\n");
+	srand(123);
+	int r1 = rand();
+        int r2 = rand();
+        int r3 = rand();
+	printp("Random numbers: %d, %d, %d\n", r1, r2, r3);
+
+	int r4 = rand() % 10 + 1;
+	int r5 = rand() % 10 + 1;
+	int r6 = rand() % 10 + 1;
+	int r7 = rand() % 10 + 1;
+	printp("Testing 'rand() % 10': %d, %d, %d, %d\n", r4, r5, r6, r7);
+
+	int r8 = randRange(7, 14);
+	int r9 = randRange(50, 100);
+	int r10 = randRange(200, 500);
+	printp("Testing rangdRange: %d, %d, %d\n", r8, r9, r10);
 }

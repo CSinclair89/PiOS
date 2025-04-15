@@ -9,8 +9,8 @@ void bubbleSort(int *nums, unsigned int len, char *pref);
 void insertionSort(int *nums, unsigned int len, char *pref);
 void deletionSort(int *nums, unsigned int len, char *pref);
 void selectionSort(int *nums, unsigned int len, char *pref);
-
 void quickSort(int *nums, int start, int end, char *pref);
+void bogoSort(int *nums, unsigned int len, char *pref);
 
 
 void mergeSortAsc(int *nums, int start, int end);

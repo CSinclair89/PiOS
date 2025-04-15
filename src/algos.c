@@ -2,6 +2,7 @@
 #include "ds.h"
 #include "io.h"
 #include "algos.h"
+#include "rand.h"
 
 /*
  * Array Sort
@@ -166,6 +167,44 @@ void selectionSort(int *nums, unsigned int len, char *pref) {
 		nums[i] = nums[max];
 		nums[max] = tmp;
 	}
+
+	exit:
+	return;
+}
+
+void bogoSort(int *nums, unsigned int len, char *pref) {
+	
+	unsigned int origLen = len;
+
+	head:
+	if (strEqual(pref, "asc")) goto asc;
+	else if (strEqual(pref, "desc")) goto desc;
+	else {
+		printp("Invalid input argument.\n");
+		goto exit;
+	}
+
+	asc:
+	for (unsigned int i = 1; i < origLen; i++) {
+		if (nums[i] < nums[i - 1]) goto shuffle;
+	}
+	goto exit;
+
+	desc:
+	for (unsigned int i = 1; i < origLen; i++) {
+		if (nums[i] > nums[i - 1]) goto shuffle;
+	}
+	goto exit;
+
+	// Fisher-Yates Shuffle
+	shuffle:
+	for (unsigned int i = origLen - 1; i > 0; i--) {
+		int j = rand() % (i + 1);
+		int tmp = nums[i];
+		nums[i] = nums[j];
+		nums[j] = tmp;
+	}
+	goto head;
 
 	exit:
 	return;

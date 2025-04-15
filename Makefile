@@ -34,6 +34,7 @@ OBJS = \
 	mem.o \
 	io.o \
 	quirks.o \
+	rand.o \
 
 OBJ = $(patsubst %,$(ODIR)/%,$(OBJS))
 

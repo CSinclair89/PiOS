@@ -27,6 +27,14 @@
  * 	e. HashMap
  * 	f. Heap
  * 	g. Vector
+ * 4.) Macros
+ * 	a. Linked List (N/A)
+ * 	b. Queue (N/A)
+ * 	c. Stack (N/A)
+ * 	d. HashSet (N/A)
+ * 	e. HashMap (N/A)
+ * 	f. Heap (N/A)
+ * 	g. Vector
  *
  * END
  */
