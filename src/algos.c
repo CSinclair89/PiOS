@@ -196,7 +196,7 @@ void bogoSort(int *nums, unsigned int len, char *pref) {
 
 	// Fisher-Yates Shuffle
 	shuffle:
-	for (unsigned int i = len - 1; i > 0; i--) {
+	for (unsigned int i = 0; i < len; i++) {
 		int j = rand() % (i + 1);
 		int tmp = nums[i];
 		nums[i] = nums[j];
