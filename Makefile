@@ -1,3 +1,4 @@
+all: bin
 
 # Verbosity toggle
 VERBOSE ?= 0
@@ -18,7 +19,10 @@ CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -mcpu=cortex-a53+
 
 # Directories and objects
 ODIR = obj
-SDIR = src
+CDIR = src/c
+RCDIR = src/rs
+
+RSOBJ = obj/rs_helloworld.o
 
 OBJS = \
 	boot.o \
@@ -36,31 +40,34 @@ OBJS = \
 	quirks.o \
 	rand.o \
 
-OBJ = $(patsubst %,$(ODIR)/%,$(OBJS))
+OBJ = $(patsubst %,$(ODIR)/%,$(OBJS)) $(RSOBJ)
+
 
 # Compilation rules
-$(ODIR)/%.o: $(SDIR)/%.c
+$(ODIR)/%.o: $(CDIR)/%.c
 	$(Q)echo "Compiling $< ..."
 	$(Q)$(CC) $(CFLAGS) -c -g -o $@ $^
 
-$(ODIR)/%.o: $(SDIR)/%.s
+$(ODIR)/%.o: $(CDIR)/%.s
 	$(Q)echo "Assembling $< ..."
 	$(Q)$(CC) $(CFLAGS) -c -g -o $@ $^
+
+$(RSOBJ): $(RCDIR)/rs_helloworld.rs
+	$(Q)echo "Compiling Rust $< ..."
+	$(Q)rustc --target=aarch64-unknown-none --emit=obj -o $@ $<
 
 
 all: bin rootfs.img
 
 bin: $(OBJ)
 	@echo "Linking kernel image..."
-	$(Q)$(LD) $(OBJ) -Tkernel.ld -o kernel8.img
-	$(Q)cp kernel8.img kernel8.elf
-	$(Q)$(OBJCOPY) -O binary kernel8.img
+	$(Q)$(LD) -T kernel.ld -o kernel8.elf $(OBJ)
+	$(Q)$(OBJCOPY) -O binary kernel8.elf kernel8.img
 	$(Q)aarch64-linux-gnu-size kernel8.elf
 
 clean:
 	@echo "Cleaning build files..."
 	rm -f obj/*
-	rm -f rootfs.img
 	rm -f rootfs.img
 	rm -f kernel8.img
 	rm -f kernel8.elf

@@ -5,6 +5,7 @@
 #include "string.h"
 #include "io.h"
 
+extern void rs_helloWorld(void);
 char glbl[128];
 // extern struct table_descriptor_stage1 L1table[512];
 
@@ -71,13 +72,13 @@ void kernel_main() {
 
 	vectorTests();
 */
-
+/*
 	printp("Algorithm Tests\n\n");
 	arraySortTests();
 	printp("\n");
 	arraySearchTests();
 	printp("\n");
-
+*/
 /*
 	duplicateNumTest();
 	printp("\n");
@@ -101,7 +102,7 @@ void kernel_main() {
 	printp("\n");
 */
 
-
+	rs_helloWorld();
 
 	// test system timer and reminder to terminate program
 	waitFor(1000000);
