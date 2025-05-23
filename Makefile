@@ -20,11 +20,9 @@ CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -mcpu=cortex-a53+
 # Directories and objects
 ODIR = obj
 CDIR = src/c
-RCDIR = src/rs
+RSDIR = src/rs
 
-RSOBJ = obj/rs_helloworld.o
-
-OBJS = \
+COBJS = \
 	boot.o \
 	kernel_main.o \
 	ds.o \
@@ -40,8 +38,10 @@ OBJS = \
 	quirks.o \
 	rand.o \
 
-OBJ = $(patsubst %,$(ODIR)/%,$(OBJS)) $(RSOBJ)
+RSOBJS = \
+	 rs_helloworld.o \
 
+OBJ = $(patsubst %,$(ODIR)/%,$(COBJS) $(RSOBJS))
 
 # Compilation rules
 $(ODIR)/%.o: $(CDIR)/%.c
@@ -52,7 +52,7 @@ $(ODIR)/%.o: $(CDIR)/%.s
 	$(Q)echo "Assembling $< ..."
 	$(Q)$(CC) $(CFLAGS) -c -g -o $@ $^
 
-$(RSOBJ): $(RCDIR)/rs_helloworld.rs
+$(ODIR)/%.o: $(RSDIR)/%.rs
 	$(Q)echo "Compiling Rust $< ..."
 	$(Q)rustc --target=aarch64-unknown-none --emit=obj -o $@ $<
 
