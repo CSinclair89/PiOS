@@ -108,6 +108,6 @@ void kernel_main() {
 	waitFor(1000000);
 	printp("\nPress Ctrl + C to terminate the signal...\n");
 
-	while(1){
+	while(1) {
     }
 }
