@@ -31,10 +31,6 @@ const PTE_AF: u64 = 1 << 10;
 // Mainly for clarity when forming entries.
 const PTE_BLOCK: u64 = 0;
 
-// Level 3 doesn't have block entries, only pages.
-// Bit 1 must be set to indicate the entry is a page mapping.
-const PTE_PAGE: u64 = 1 << 1;
-
 // Memory Attribute Indirection Register (MAIR)
 // Non-Gathering, non-Reordering, Early Write Acknowledgements (nGnRE)
 const MAIR_DEVICE_nGnRE: u64 = 0x00;
@@ -45,27 +41,27 @@ const MAIR_NORMAL: u64 = 0xff;
  */
 
 pub unsafe fn mapPage(
-    l1_tbl: *mut u64, // L1 page tagle
+    l1_tbl: *mut u64, // L1 page table
     vaddr: u64,
     paddr: u64,
     attrs: u64
 ) {
     let l1_idx = (vaddr >> 30) & 0x1FF;
     let l2_idx = (vaddr >> 21) & 0x1FF;
-    let l3_idx = (vaddr >> 21) & 0x1FF;
 
-    // L1 table points to L2
-    let l2_tbl = allocatePhysPages();
-    *l1_tbl.add(l1_idx as usize) = (l2_tbl as u64) | PTE_VALID | PTE_TBL;
+    // Get L2 table from L1 entry
+    let l1_entry = l1_tbl.add(l1_idx as usize);
 
-    // L2 table points to L3
-    let l2_tbl = l2_tbl as *mut u64;
-    let l3_tbl = allocatePhysPages();
-    *l2_tbl.add(l2_idx as usize) = (l3_tbl as u64) | PTE_VALID | PTE_TBL;
+    let l2_tbl: *mut u64;
+    if *l1_entry & PTE_VALID == 0 {
+        let l2_page = allocatePhysPages(1);
+        l2_tbl = (*l2_page).phys_addr as *mut u64;
+        *l1_entry = (l2_tbl as u64) | PTE_VALID | PTE_TBL;
+    } else l2_tbl = (*l1_entry & !0xFFF) as *mut u64;
 
-    // L3 table maps to physical address
-    let l3_tbl = l3_tbl as *mut u64;
-    *l3_tbl.add(l3_idx as usize) = (paddr & !0xFFF) | PTE_VALID | PTE_AF | PTE_PAGE | attrs;
+    // Set block entry in L2 for 2MB mapping
+    let l2_entry = l2_tbl.add(l2_idx as usize);
+    *l2_entry = (paddr & !(0x1F_FFFF)) | PTE_VALID | PTE_AF | PTE_BLOCK | attrs;
 }
 
 /*
