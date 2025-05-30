@@ -1,6 +1,3 @@
-#![no_main] // This is a library
-#![no_std] // We're on bare metal -- no standard library
-
 extern "C" { // We're pulling an external function name printp()
     fn printp(msg: *const u8);  // point to the memory address of 'msg'
 }
@@ -13,8 +10,3 @@ pub extern "C" fn rs_helloWorld() { // header for public external method
     unsafe { printp(msg.as_ptr()); } // 'unsafe' aka we're working with C.
                                      // make the method call using .as_ptr() core func
 }
-
-use core::panic::PanicInfo; // NOT SURE YET
-
-#[panic_handler] // Since no standard library, we must define our own panic function
-fn panic(_info: &PanicInfo) -> ! { loop{} } // NOT SURE YET

@@ -26,7 +26,7 @@ void kernel_main() {
 /*
  * Begin Page Frame Allocator
  */
-	
+/*	
 	// initialize page frame allocator	
 	init_pfa_list();
 
@@ -49,7 +49,7 @@ void kernel_main() {
 	printp("\nFreed the previous 10 pages:\n");
 	printFreeList();
 	
-
+*/
 /*
  * End Page Frame Allocator
  */

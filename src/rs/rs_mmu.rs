@@ -2,16 +2,8 @@
  * Set Up Interface Between C and Rust
  */
 
-#[repr(c)]
-pub struct PPage {
-    pub next: *mut PPage,
-    pub prev: *mut PPage,
-    pub phys_addr: *mut u8
-}
-
 extern "C" {
     pub fn allocatePhysPages(npages: u32) -> *mut PPage;
-    pub fn freePhysPages(page: *mut PPage);
 }
 
 /*
@@ -33,14 +25,14 @@ const PTE_BLOCK: u64 = 0;
 
 // Memory Attribute Indirection Register (MAIR)
 // Non-Gathering, non-Reordering, Early Write Acknowledgements (nGnRE)
-const MAIR_DEVICE_nGnRE: u64 = 0x00;
+const MAIR_DEVICE_NGNRE: u64 = 0x00;
 const MAIR_NORMAL: u64 = 0xff;
 
 /*
  * Create Page Table Manipulation Functions
  */
 
-pub unsafe fn mapPage(
+pub unsafe fn map_page(
     l1_tbl: *mut u64, // L1 page table
     vaddr: u64,
     paddr: u64,
@@ -57,11 +49,39 @@ pub unsafe fn mapPage(
         let l2_page = allocatePhysPages(1);
         l2_tbl = (*l2_page).phys_addr as *mut u64;
         *l1_entry = (l2_tbl as u64) | PTE_VALID | PTE_TBL;
-    } else l2_tbl = (*l1_entry & !0xFFF) as *mut u64;
+    } else {
+        l2_tbl = (*l1_entry & !0xFFF) as *mut u64;
+    }
 
     // Set block entry in L2 for 2MB mapping
     let l2_entry = l2_tbl.add(l2_idx as usize);
     *l2_entry = (paddr & !(0x1F_FFFF)) | PTE_VALID | PTE_AF | PTE_BLOCK | attrs;
+}
+
+/*
+ * Create Rust-safe Wrapper for C function: allocatePhysPages()
+ */
+
+#[repr(C)]
+pub struct PPage {
+    pub next: *mut PPage,
+    pub prev: *mut PPage,
+    pub phys_addr: *mut u8
+}
+
+use core::ptr::NonNull;
+
+pub struct PhysPage { ptr: NonNull<PPage> }
+
+impl PhysPage {
+    
+    pub unsafe fn from_raw(ptr: *mut PPage) -> Option<Self> {
+        NonNull::new(ptr).map(|nn| PhysPage {ptr: nn })
+    }    
+
+    pub fn phys_addr(&self) -> *mut u8 {
+        unsafe { self.ptr.as_ref().phys_addr }
+    }
 }
 
 /*
@@ -85,16 +105,23 @@ pub unsafe fn mapPage(
  * - EL1 stands for Exception Level 1 aka kernel level
  */
 
+
 #[no_mangle]
 #[inline(never)]
-unsafe fn initMMU() {
+unsafe fn init_mmu() {
     
     // Allocate L1 table
-    let l1_tbl = allocatePhysPages(1);
-    let tbl_addr = (*l1_tbl).phys_addr as u64;
+    let raw_ptr = allocatePhysPages(1);
+    let l1_tbl = match PhysPage::from_raw(raw_ptr) {
+        Some(page) => page,
+        None => loop {}
+    };
+    let tbl_addr = l1_tbl.phys_addr() as u64;
+
 
     // identity map a vaddr to a paddr
-    mapPage(
+ 
+    map_page(
         tbl_addr as *mut u64,
         0x0000_0000,
         0x0000_0000,
@@ -102,7 +129,7 @@ unsafe fn initMMU() {
     );
 
     // define register values
-    let mair: u64 = (MAIR_DEVICE_nGnRE << 0) | (MAIR_NORMAL << 8);
+    let mair: u64 = (MAIR_DEVICE_NGNRE << 0) | (MAIR_NORMAL << 8);
     let tcr: u64 = (0b10010000 << 0) | (0b00 << 6) | (0b00 << 8);
 
     // set memory registers with respective values
@@ -120,15 +147,17 @@ unsafe fn initMMU() {
     core::arch::asm!("isb");
 
     // enable MMU via system control register
-    let mut sctlr_el1: u64;
+    let mut _sctlr_el1: u64;
     core::arch::asm!(
         "mrs {val}, SCTLR_EL1",
-        "orr {val}, {val}, {bit}",
+        "orr {val}, {val}, {bit:x}",
         "msr SCTLR_EL1, {val}",
-        val = out(reg) sctlr_el1,
+        val = out(reg) _,
         bit = in(reg) 1
     );
 
     // Good practice to follow with another flush after writing to system control register
     core::arch::asm!("isb");
+
 }
+

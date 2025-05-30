@@ -38,11 +38,10 @@ COBJS = \
 	quirks.o \
 	math.o \
 
-RSOBJS = \
-	 rs_helloworld.o \
-	 rs_mmu.rs \
+RSSRC = $(wildcard $(RSDIR)/*.rs)
+RSOBJS = $(ODIR)/rs_kernel.o
 
-OBJ = $(patsubst %,$(ODIR)/%,$(COBJS) $(RSOBJS))
+OBJ = $(patsubst %,$(ODIR)/%,$(COBJS)) $(RSOBJS)
 
 # Compilation rules
 $(ODIR)/%.o: $(CDIR)/%.c
@@ -53,10 +52,9 @@ $(ODIR)/%.o: $(CDIR)/%.s
 	$(Q)echo "Assembling $< ..."
 	$(Q)$(CC) $(CFLAGS) -c -g -o $@ $^
 
-$(ODIR)/%.o: $(RSDIR)/%.rs
+$(RSOBJS): $(RSDIR)/lib.rs $(RSSRC)
 	$(Q)echo "Compiling Rust $< ..."
-	$(Q)rustc --target=aarch64-unknown-none --emit=obj -o $@ $<
-
+	$(Q)rustc -C panic=abort --target=aarch64-unknown-none --crate-type staticlib -o $@ $<
 
 all: bin rootfs.img
 
