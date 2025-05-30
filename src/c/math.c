@@ -1,4 +1,4 @@
-#include "rand.h"
+#include "math.h"
 
 /*
  * Pseudo-Random Number Generator (PRNG)

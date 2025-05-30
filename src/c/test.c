@@ -7,7 +7,7 @@
 #include "mem.h"
 #include "io.h"
 #include "quirks.h"
-#include "rand.h"
+#include "math.h"
 
 // mapping
 

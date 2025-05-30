@@ -2,7 +2,7 @@
 #include "ds.h"
 #include "io.h"
 #include "algos.h"
-#include "rand.h"
+#include "math.h"
 
 /*
  * Array Sort

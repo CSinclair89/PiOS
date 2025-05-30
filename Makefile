@@ -36,10 +36,11 @@ COBJS = \
 	mem.o \
 	io.o \
 	quirks.o \
-	rand.o \
+	math.o \
 
 RSOBJS = \
 	 rs_helloworld.o \
+	 rs_mmu.rs \
 
 OBJ = $(patsubst %,$(ODIR)/%,$(COBJS) $(RSOBJS))
 
