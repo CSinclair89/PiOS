@@ -99,3 +99,5 @@ void printFreeList(void) {
 	}
 	printp("End of Free List (NULL)\n");
 }
+
+void *getPhysAddr(struct ppage *page) { return page->physAddr; }

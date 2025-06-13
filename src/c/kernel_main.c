@@ -96,11 +96,11 @@ void kernel_main() {
 	randTest();
 	printp("\n");
 */
-/*
+
 	printp("MMU Test\n\n");
 	mmuTests();
 	printp("\n");
-*/
+
 
 	rs_helloWorld();
 

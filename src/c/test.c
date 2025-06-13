@@ -11,6 +11,37 @@
 
 // mapping
 
+void print_page_tables(unsigned long long *l1) {
+
+	for (int i = 0; i < 512; i++) {
+		if (l1[i] & 1) {
+			putp('L'); putp('1'); putp('[');
+			putv(i);
+			putp(']');
+			putp('=');
+			putv((unsigned int)(l1[i] >> 32));
+			putv((unsigned int)(l1[i] & 0xFFFFFFFF));
+			putp('\n');
+
+			// If L1 points to a table, walk L2
+			if ((l1[i] & 0x3) == 0x3) {
+				unsigned long long *l2 = (unsigned long long *)(l1[i] & ~0xFFFUL);
+				for (int j = 0; j < 512; j++) {
+					if (l2[j] & 1) {
+						putp(' '); putp('L'); putp('2'); putp('[');
+						putv(j);
+						putp(']');
+						putp('=');
+						putv((unsigned int)(l2[j] >> 32));
+						putv((unsigned int)(l2[j] & 0xFFFFFFFF));
+						putp('\n');
+					}
+				}
+			}
+		}
+	}
+}
+
 void mmuTests() {
 	
 	printp("--MMU TEST--\n\n");
@@ -19,148 +50,33 @@ void mmuTests() {
 	init_pfa_list();
 	freeList = &physPageArray[0];
 
-	struct ppage *testPage1 = allocatePhysPages(1);
-	if (testPage1) printp("Allocated success (0x%x)\n", testPage1);
-	else printp("Allocate failed.\n");
+	unsigned long long l1_tbl[512] __attribute__((aligned(4096)));
 
-	struct ppage *testPage2 = allocatePhysPages(1);
-	if (testPage2) printp("Allocated success (0x%x)\n", testPage2);
-	else printp("Allocate failed.\n");
+	void *vaddr_base = (void *)0x40000000;
+	void *paddr_base = (void *)0x3F200000;
 
-	freePhysPages(testPage2);
-	freePhysPages(testPage1);
-/*
-	// define a virtual address
-	void *vaddr = (void *)0x40000000;
+	unsigned long offset = 0x15040;
+	unsigned long long attrs = map_page_attrs();
 
-	// allocate the physical page
-	struct ppage *allocatedPage = allocatePhysPages(1);
-	if (allocatedPage == NULL) printp("Cannot allocate page\n");
-	void *paddr = allocatedPage->physAddr;
+	putp('A');
 
-	mapPages(vaddr, paddr);
-	printp("Mapped virtual address 0x%x to physical address 0x%x!\n", vaddr, paddr);
+	map_page(l1_tbl, vaddr_base, paddr_base, attrs);
+	print_page_tables(l1_tbl);
 
-	void *vaddr2 = (void *)0x80000000;
-	void *paddr2 = allocateAndMapPage(vaddr2);
-	
-	printp("Mapped virtual address (0x%x) to physical address (0x%x)\n", vaddr2, paddr2);
+	putp('B');
 
-	printp("\n");
+//	init_mmu(l1_tbl);
 
-	printp("Test msg (virtual).\n");
-	printp("Test msg (physical).\n");
-	checkMMUState();
+	asm volatile ("tlbi vmalle1\n"
+			"dsb ish\n"
+			"isb\n"
+			:
+			: "r"(l1_tbl)
+			: "memory");
+	putp('D');
+	putv('E');
 
-	void *vaddrSerial = (void *)0xC0000040;
-	void *paddrSerial = (void *)0x3F215040;
-	mapPagesIO(vaddrSerial, paddrSerial);
-	mmu_on();
-	__asm__ volatile("dsb ish");
-	__asm__ volatile("isb");
-	checkMMUState();
-	printp("Mapped physical serial address (0x%x) to virtual address (0x%x).\n", paddrSerial, vaddrSerial);
-	
-	setupSerialMapping();
-	printp("Test msg (physical).\n");
-	printp("Test msg (virtual).\n");
-
-	printp("Testing virtual-physical address translation outside of serial\n");
-	void *vaddrTest = (void *)0xC0000000;
-	void *paddrTest = (void *)0x400000;
-	mapPages(vaddrTest, paddrTest);
-	mmu_on();	
-	
-	// Use Barriers to Ensure Changes Take Effect
-	__asm__ volatile("dsb sy");
-	__asm__ volatile("isb");
-	
-	volatile unsigned int *testAddr = (volatile unsigned int *)vaddrTest;
-	*testAddr = 0xDEADBEEF;
-	printp("Value at vaddr 0x%x: 0x%x\n", vaddrTest, *testAddr);
-
-	
-	char testChar = 'A';
-	int res = putc(testChar);
-	int serialTest = checkSerialPortMapping();
-	if (serialTest == 1) printp("Serial port is correctly mapped!\n");
-	else printp("Serial port NOT correctly mapped.\n");
-	
-	if (res == testChar) printp("Test passsed!\n");
-	else printp("Test failed\n");
-
-	
-
-	int *testPtr = (int *)vaddr;
-	*testPtr = 42;
-	printp("Value (%d) written to virtual address (0x%x)\n", testPtr, *testPtr);
-*/
-	printp("\n");
-
-	printp("MMU Test 2 begins.\n");
-
-	// need 3 inputs, virtual address, allocated page, and page directory
-	void *vaddr3 = (void *)0x400000; // aligned to 2MB
-	struct ppage *newPage = allocatePhysPages(1);
-	struct page_directory pd = {0};
-
-	if (newPage) {
-	        void *mappedAddr = mapPages(vaddr3, newPage, &pd);
-		if (mappedAddr) {
-			printp("Mapped vaddr (0x%x) to paddr (0x%x).\n", mappedAddr, newPage->physAddr);
-		} else {
-			printp("Failed to map.\n");
-		}
-	}
-
-	printp("Initial mapping was successful.\n");
-	freePhysPages(newPage);
-
-	printp("\n");
-
-	printp("Testing serial port mapping:\n");
-
-	printp("\n");
-	
-	/* serial port address mapping
-	void *vaddrSerial = (void *)0x40000000;
-	void *paddrSerial = (void *)0x3F215040;
-
-	void *serialAddr = mapAddress(vaddrSerial, paddrSerial);
-	if (serialAddr) printp("Printing with putv. Vaddr: 0x%x | Paddr: 0x%x\n", vaddrSerial, paddrSerial);
-	else printp("Printing with putp because I suck at this...\n");
-*/
-
-	printp("Testing\n\n");
-
-
-	printp("\n");
-
-	printp("Testing mapping of one page:\n");
-	struct ppage *onePage = allocatePhysPages(1);
-	void *oneVaddr = (void *)0xC0000000;
-	struct page_directory onePd = {0};
-
-	if (mapPages(oneVaddr, onePage, &onePd)) {
-		printp("Mapped vaddr (0x%x) to paddr (0x%x)\n", oneVaddr, onePage->physAddr);
-
-		int *testInt = (int *)oneVaddr;
-		*testInt = 42;
-		int vaddrVal = *(int *)oneVaddr;
-		int paddrVal = *(int *)mapAddress(oneVaddr, onePage->physAddr);
-
-		printp("Value at vaddr (0x%x) = %d\n", oneVaddr, vaddrVal);
-		printp("Value at paddr (0x%x) = %d\n", onePage->physAddr, paddrVal);
-
-
-	} else {
-		printp("Mapping failed\n");
-	}
-
-
-	printp("\n");
-
-	printp("\n");
+	printv("Hello\n");
 
 	printp("\n");
 

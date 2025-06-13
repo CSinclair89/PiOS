@@ -6,7 +6,7 @@
  */
 
 #define MU_10_PHYSICAL 0x3F215040
-#define MU_10_VIRTUAL 0x40000000
+#define MU_10_VIRTUAL (0x40000000 + 0x15040)
 
 int putp(int data) {
 	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_PHYSICAL;
@@ -15,13 +15,9 @@ int putp(int data) {
 }
 
 int putv(int data) {
-	void *mappedAddr = mapAddress((void *)MU_10_VIRTUAL, (void *)MU_10_PHYSICAL);
-	if (mappedAddr) {
-		volatile unsigned int *mu10 = (volatile unsigned int *)mappedAddr;
-		*mu10 = (unsigned int)(data & 0xFF);
-		return data;
-	}
-	return -1;
+	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_VIRTUAL;
+	*mu10 = (unsigned int)(data & 0xFF);
+	return data;
 }
 
 

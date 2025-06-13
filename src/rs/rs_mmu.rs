@@ -4,7 +4,11 @@
 
 extern "C" {
     pub fn allocatePhysPages(npages: u32) -> *mut PPage;
+    pub fn getPhysAddr(page: *mut PPage) -> *mut u8;
 }
+
+#[repr(C)]
+pub struct PPage { _unused: [u8; 0] }
 
 /*
  * Define Page Table Entry Structure
@@ -28,11 +32,20 @@ const PTE_BLOCK: u64 = 0;
 const MAIR_DEVICE_NGNRE: u64 = 0x00;
 const MAIR_NORMAL: u64 = 0xff;
 
+#[no_mangle]
+pub extern "C" fn map_page_attrs() -> u64 {
+    const ATTR_IDX_DEVICE: u64 = 0 << 2;
+    const UXN: u64 = 1 << 54;
+    const PXN: u64 = 1<< 53;
+    ATTR_IDX_DEVICE | UXN | PXN
+}
+
 /*
  * Create Page Table Manipulation Functions
  */
 
-pub unsafe fn map_page(
+#[no_mangle]
+pub extern "C" fn map_page(
     l1_tbl: *mut u64, // L1 page table
     vaddr: u64,
     paddr: u64,
@@ -42,45 +55,23 @@ pub unsafe fn map_page(
     let l2_idx = (vaddr >> 21) & 0x1FF;
 
     // Get L2 table from L1 entry
-    let l1_entry = l1_tbl.add(l1_idx as usize);
+    let l1_entry = unsafe { l1_tbl.add(l1_idx as usize) };
 
-    let l2_tbl: *mut u64;
-    if *l1_entry & PTE_VALID == 0 {
-        let l2_page = allocatePhysPages(1);
-        l2_tbl = (*l2_page).phys_addr as *mut u64;
-        *l1_entry = (l2_tbl as u64) | PTE_VALID | PTE_TBL;
-    } else {
-        l2_tbl = (*l1_entry & !0xFFF) as *mut u64;
-    }
+    let l2_tbl: *mut u64 = unsafe {
+        if (*l1_entry & PTE_VALID) == 0 {
+            let l2_page = allocatePhysPages(1); 
+            let tbl_ptr = getPhysAddr(l2_page) as *mut u64;
+            *l1_entry = (tbl_ptr as u64) | PTE_VALID | PTE_TBL;
+            tbl_ptr
+        } else {
+            (*l1_entry & !0xFFF) as *mut u64
+        }
+    };
 
     // Set block entry in L2 for 2MB mapping
-    let l2_entry = l2_tbl.add(l2_idx as usize);
-    *l2_entry = (paddr & !(0x1F_FFFF)) | PTE_VALID | PTE_AF | PTE_BLOCK | attrs;
-}
-
-/*
- * Create Rust-safe Wrapper for C function: allocatePhysPages()
- */
-
-#[repr(C)]
-pub struct PPage {
-    pub next: *mut PPage,
-    pub prev: *mut PPage,
-    pub phys_addr: *mut u8
-}
-
-use core::ptr::NonNull;
-
-pub struct PhysPage { ptr: NonNull<PPage> }
-
-impl PhysPage {
-    
-    pub unsafe fn from_raw(ptr: *mut PPage) -> Option<Self> {
-        NonNull::new(ptr).map(|nn| PhysPage {ptr: nn })
-    }    
-
-    pub fn phys_addr(&self) -> *mut u8 {
-        unsafe { self.ptr.as_ref().phys_addr }
+    unsafe {
+        let l2_entry = l2_tbl.add(l2_idx as usize);
+        *l2_entry = (paddr & !(0x1F_FFFF)) | PTE_VALID | PTE_AF | PTE_BLOCK | attrs ;
     }
 }
 
@@ -105,18 +96,15 @@ impl PhysPage {
  * - EL1 stands for Exception Level 1 aka kernel level
  */
 
-
+/*
 #[no_mangle]
 #[inline(never)]
 unsafe fn init_mmu() {
     
     // Allocate L1 table
-    let raw_ptr = allocatePhysPages(1);
-    let l1_tbl = match PhysPage::from_raw(raw_ptr) {
-        Some(page) => page,
-        None => loop {}
-    };
-    let tbl_addr = l1_tbl.phys_addr() as u64;
+    let l1_page = allocatePhysPages(1);
+    if l1_page.is_null() { loop {} }
+    let tbl_addr = getPhysAddr(l1_page) as u64;
 
 
     // identity map a vaddr to a paddr
@@ -160,4 +148,41 @@ unsafe fn init_mmu() {
     core::arch::asm!("isb");
 
 }
+*/
+
+#[no_mangle]
+pub extern "C" fn init_mmu(l1_tbl: *mut u64) {
+    if l1_tbl.is_null() { loop {} }
+
+    let vaddr: u64 = 0x4000_0000;
+    let paddr: u64 = 0x3F20_0000;
+    let attrs: u64 = map_page_attrs();
+    map_page(l1_tbl, vaddr, paddr, attrs);
+
+    let mair: u64 = (MAIR_DEVICE_NGNRE << 0) | (MAIR_NORMAL << 8);
+    let tcr: u64 = (16 << 0) | (16 << 16); 
+
+    unsafe {
+        core::arch::asm!("msr MAIR_EL1, {}", in(reg) mair);
+        core::arch::asm!("msr TCR_EL1, {}", in(reg) tcr);
+        core::arch::asm!("msr TTBR0_EL1, {}", in(reg) l1_tbl as u64);
+
+        core::arch::asm!("dsb sy");
+        core::arch::asm!("isb");
+
+        let mut sctlr_el1: u64;
+        core::arch::asm!(
+            "mrs {val}, SCTLR_EL1",
+            "orr {val}, {val}, {bits}",
+            "msr SCTLR_EL1, {val}",
+            val = out(reg) sctlr_el1,
+            bits = in(reg) (1 << 0) | (1 << 2) | (1 << 12)
+        );
+        core::arch::asm!("isb");
+    }
+}
+
+
+
+
 

@@ -18,5 +18,6 @@ void init_pfa_list(void);
 struct ppage *allocatePhysPages(unsigned int npages);
 void freePhysPages(struct ppage *ppageList);
 void printFreeList(void);
+void *getPhysAddr(struct ppage *page);
 
 #endif
