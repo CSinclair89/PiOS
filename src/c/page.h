@@ -2,7 +2,7 @@
 #define PAGE_H
 
 #define NULL (void *)0
-#define PAGE_COUNT 128
+#define PAGE_COUNT 2048
 #define uintptr_t unsigned long long
 
 struct ppage {

@@ -5,6 +5,7 @@
 extern "C" {
     pub fn allocatePhysPages(npages: u32) -> *mut PPage;
     pub fn getPhysAddr(page: *mut PPage) -> *mut u8;
+    pub fn printp(fmt: *const u8, ...) -> i32;
 }
 
 #[repr(C)]
@@ -27,17 +28,25 @@ const PTE_AF: u64 = 1 << 10;
 // Mainly for clarity when forming entries.
 const PTE_BLOCK: u64 = 0;
 
+const PTE_SH_INNER: u64 = 0b11 << 8;
+const PTE_AP_RW: u64 = 0 << 6;
+const PTE_AP_RW_EL1: u64 = 0b00 << 6;
+const PTE_ATTR_IDX_0: u64 = 0 << 2;
+
+const UXN: u64 = 1 << 54;
+const PXN: u64 = 1 << 53;
+
 // Memory Attribute Indirection Register (MAIR)
 // Non-Gathering, non-Reordering, Early Write Acknowledgements (nGnRE)
-const MAIR_DEVICE_NGNRE: u64 = 0x00;
+const MAIR_DEVICE_NGNRE: u64 = 0x04;
 const MAIR_NORMAL: u64 = 0xff;
 
 #[no_mangle]
 pub extern "C" fn map_page_attrs() -> u64 {
-    const ATTR_IDX_DEVICE: u64 = 0 << 2;
+    const ATTR_IDX_NORMAL: u64 = 0 << 2;
     const UXN: u64 = 1 << 54;
     const PXN: u64 = 1<< 53;
-    ATTR_IDX_DEVICE | UXN | PXN
+    ATTR_IDX_NORMAL | UXN | PXN
 }
 
 /*
@@ -71,7 +80,14 @@ pub extern "C" fn map_page(
     // Set block entry in L2 for 2MB mapping
     unsafe {
         let l2_entry = l2_tbl.add(l2_idx as usize);
-        *l2_entry = (paddr & !(0x1F_FFFF)) | PTE_VALID | PTE_AF | PTE_BLOCK | attrs ;
+        *l2_entry = (paddr & !(0x1F_FFFF))
+            | PTE_VALID 
+            | PTE_AF
+            | PTE_ATTR_IDX_0
+            | PTE_AP_RW_EL1
+            | PTE_SH_INNER
+            | UXN
+            | PXN;
     }
 }
 
@@ -149,7 +165,7 @@ unsafe fn init_mmu() {
 
 }
 */
-
+/*
 #[no_mangle]
 pub extern "C" fn init_mmu(l1_tbl: *mut u64) {
     if l1_tbl.is_null() { loop {} }
@@ -181,8 +197,54 @@ pub extern "C" fn init_mmu(l1_tbl: *mut u64) {
         core::arch::asm!("isb");
     }
 }
+*/
 
+use core::ffi::c_char;
 
+#[no_mangle]
+pub extern "C" fn init_mmu(l1_tbl: *const u64) {
+    if l1_tbl.is_null() { loop{} }
+    unsafe {
+        
+        let mair_val: u64 = (0xFF << 0);
+        core::arch::asm!("msr MAIR_EL1, {}", in(reg) mair_val);
+
+        let tcr_val: u64 = 0b100100000101 | (16 << 16);
+        core::arch::asm!("msr TCR_EL1, {}", in(reg) tcr_val);
+        core::arch::asm!("msr TTBR0_EL1, {}", in(reg) l1_tbl as u64);
+
+        core::arch::asm!("dsb ish");
+        core::arch::asm!("isb");
+
+        let mut sctlr_el1: u64;
+        core::arch::asm!(
+            "mrs {val}, SCTLR_EL1",
+            "orr {val}, {val}, {m_bit}",
+            "orr {val}, {val}, {c_bit}",
+            "orr {val}, {val}, {i_bit}",
+            "msr SCTLR_EL1, {val}",
+            "isb",
+            val = out(reg) sctlr_el1,
+            m_bit = const 1 << 0,
+            c_bit = const 1 << 2,
+            i_bit = const 1 << 12,
+        );
+
+        let mut new_sctlr: u64;
+        core::arch::asm!("mrs {}, SCTLR_EL1", out(reg) new_sctlr);
+
+        let fmt = b"SCTLR_EL1 = 0x%llx\n\0" as *const u8 as *const c_char;
+
+        printp(fmt, new_sctlr);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn call_print_paddr(paddr: *mut u8) {
+    let addr = paddr as u64;
+    let fmt = b"Rust test: paddr = 0x%llx\n\0".as_ptr();
+    unsafe { printp(fmt, addr); }
+}
 
 
 

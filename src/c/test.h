@@ -10,9 +10,11 @@ extern void map_page(
 		);
 extern void init_mmu(unsigned long long *l1_tbl);
 extern unsigned long long map_page_attrs(void);
+extern void call_print_paddr(void *paddr);
 
 // memory mapping
-void print_page_tables(unsigned long long *l1);
+void print_page_tables_before_MMU(unsigned long long *l1);
+void print_page_tables_after_MMU(unsigned long long *l1);
 void mmuTests();
 
 // data structures

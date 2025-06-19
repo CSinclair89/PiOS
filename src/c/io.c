@@ -20,6 +20,35 @@ int putv(int data) {
 	return data;
 }
 
+int putv_phys(int data) {
+	volatile unsigned int *mu10 = (volatile unsigned int *)0x3F215040;
+	*mu10 = (unsigned int)(data & 0xFF);
+	return data;
+}
+
+void putu(unsigned int x) {
+	char buf[10];
+	int i = 0;
+	if (x == 0) {
+		putp('0');
+		return;
+	}
+
+	while (x > 0) {
+		buf[i++] = '0' + (x % 10);
+		x /= 10;
+	}
+
+	while (--i >= 0) putp(buf[i]);
+}
+
+void puthex(unsigned long long x) {
+	for (int i = 60; i >= 0; i -= 4) {
+		int digit = (x >> i) & 0xF;
+		putp(digit < 10 ? '0' + digit : 'A' + (digit - 10));
+	}
+}
+
 
 /*
  * Print functions

@@ -11,16 +11,15 @@
 
 // mapping
 
-void print_page_tables(unsigned long long *l1) {
+void print_page_tables_before_MMU(unsigned long long *l1) {
 
 	for (int i = 0; i < 512; i++) {
 		if (l1[i] & 1) {
 			putp('L'); putp('1'); putp('[');
-			putv(i);
+			putu(i);
 			putp(']');
 			putp('=');
-			putv((unsigned int)(l1[i] >> 32));
-			putv((unsigned int)(l1[i] & 0xFFFFFFFF));
+			puthex(l1[i]);
 			putp('\n');
 
 			// If L1 points to a table, walk L2
@@ -29,11 +28,10 @@ void print_page_tables(unsigned long long *l1) {
 				for (int j = 0; j < 512; j++) {
 					if (l2[j] & 1) {
 						putp(' '); putp('L'); putp('2'); putp('[');
-						putv(j);
+						putu(j);
 						putp(']');
 						putp('=');
-						putv((unsigned int)(l2[j] >> 32));
-						putv((unsigned int)(l2[j] & 0xFFFFFFFF));
+						puthex(l2[i]);
 						putp('\n');
 					}
 				}
@@ -42,15 +40,48 @@ void print_page_tables(unsigned long long *l1) {
 	}
 }
 
+void print_page_tables_after_MMU(unsigned long long *l1) {
+
+	for (int i = 0; i < 512; i++) {
+		if (l1[i] & 1) {
+			putp('L'); putp('1'); putp('[');
+			putu(i);
+			putp(']');
+			putp('=');
+			puthex((unsigned int)(l1[i] >> 32));
+			puthex((unsigned int)(l1[i] & 0xFFFFFFFF));
+			putp('\n');
+
+			// If L1 points to a table, walk L2
+			if ((l1[i] & 0x3) == 0x3) {
+				unsigned long long *l2 = (unsigned long long *)(l1[i] & ~0xFFFUL);
+				for (int j = 0; j < 512; j++) {
+					if (l2[j] & 1) {
+						putp(' '); putp('L'); putp('2'); putp('[');
+						putu(j);
+						putp(']');
+						putp('=');
+						puthex((unsigned int)(l2[j] >> 32));
+						puthex((unsigned int)(l2[j] & 0xFFFFFFFF));
+						putp('\n');
+					}
+				}
+			}
+		}
+	}
+}
 void mmuTests() {
 	
 	printp("--MMU TEST--\n\n");
-
+/*
 	// initialize the page frame allocator
 	init_pfa_list();
-	freeList = &physPageArray[0];
+	freeList = &physPageArray[20];
 
-	unsigned long long l1_tbl[512] __attribute__((aligned(4096)));
+	struct ppage *l1_page = allocatePhysPages(1);
+	unsigned long long l1_tbl = (unsigned long long *) getPhysAddr(l1_page);
+
+	printp("Physical address of L1 page: 0x%x\n", getPhysAddr(l1_page));
 
 	void *vaddr_base = (void *)0x40000000;
 	void *paddr_base = (void *)0x3F200000;
@@ -61,22 +92,63 @@ void mmuTests() {
 	putp('A');
 
 	map_page(l1_tbl, vaddr_base, paddr_base, attrs);
-	print_page_tables(l1_tbl);
+	print_page_tables_before_MMU(l1_tbl);
 
 	putp('B');
 
-//	init_mmu(l1_tbl);
+	init_mmu((void *) l1_tbl);
 
 	asm volatile ("tlbi vmalle1\n"
 			"dsb ish\n"
-			"isb\n"
-			:
-			: "r"(l1_tbl)
-			: "memory");
+			"isb\n");
+
 	putp('D');
+	putv_phys('G');
+
+	volatile unsigned int *mu = (volatile unsigned int *)0x40015040;
+	*mu = 'Z';
+
 	putv('E');
 
 	printv("Hello\n");
+*/
+
+	init_pfa_list();
+	freeList = &physPageArray[20];
+
+	struct ppage *l1_page = allocatePhysPages(1);
+	unsigned long long *l1_tbl = (unsigned long long *)getPhysAddr(l1_page);
+
+	struct ppage *testPage = allocatePhysPages(512);
+	void *paddr = getPhysAddr(testPage);
+	void *vaddr = (void *)0x40200000;
+
+	if ((uintptr_t)paddr & 0x1FFFFF) printp("ERROR: paddr is not 2MB aligned: 0x%x\n", paddr);
+	
+	printp("C test: paddr = 0x%x\n", paddr);
+	call_print_paddr(paddr);
+
+	unsigned long long attrs = map_page_attrs();
+
+	void *mu_phys = (void *)0x3F215040;
+	void *mu_virt = (void *)0x40000000;
+
+	print_page_tables_before_MMU(l1_tbl);
+	map_page(l1_tbl, mu_virt, mu_phys, attrs);
+
+
+	init_mmu(l1_tbl);
+
+	unsigned int *testPtr = (unsigned int *)vaddr;
+	*testPtr = 0xDEADBEEF;
+
+	if (*testPtr == 0xDEADBEEF) putv('O');
+	else putv('F');
+
+	unsigned int *x = (unsigned int *)0x40000000;
+	*x = 0xDEADBEEF;
+	if (*x == 0xDEADBEEF) putv('O');
+	else putv('F');
 
 	printp("\n");
 
