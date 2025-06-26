@@ -6,7 +6,7 @@
  */
 
 #define MU_10_PHYSICAL 0x3F215040
-#define MU_10_VIRTUAL (0x40000000 + 0x15040)
+#define MU_10_VIRTUAL (0x40000000 + 0x5040)
 
 int putp(int data) {
 	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_PHYSICAL;
@@ -16,12 +16,6 @@ int putp(int data) {
 
 int putv(int data) {
 	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_VIRTUAL;
-	*mu10 = (unsigned int)(data & 0xFF);
-	return data;
-}
-
-int putv_phys(int data) {
-	volatile unsigned int *mu10 = (volatile unsigned int *)0x3F215040;
 	*mu10 = (unsigned int)(data & 0xFF);
 	return data;
 }
@@ -48,7 +42,6 @@ void puthex(unsigned long long x) {
 		putp(digit < 10 ? '0' + digit : 'A' + (digit - 10));
 	}
 }
-
 
 /*
  * Print functions

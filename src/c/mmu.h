@@ -6,6 +6,15 @@
 #define NUM_PAGES 128
 #define PAGE_SIZE_2MB 0x200000
 
+int C_map_device_attrs();
+int C_map_page(
+		unsigned long *l1_tbl, 
+		unsigned long vaddr, 
+		unsigned long paddr, 
+		unsigned long attrs
+		);
+void C_init_mmu(unsigned long *l1_tbl);
+
 struct page_directory_entry {
    unsigned long present       : 1;   // Page present in memory
    unsigned long rw            : 1;   // Read-only if clear, R/W if set

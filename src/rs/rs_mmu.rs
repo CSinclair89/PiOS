@@ -27,12 +27,10 @@ const PTE_AF: u64 = 1 << 10;
 // Sets bit 1 to 0, defining entry as a block entry.
 // Mainly for clarity when forming entries.
 const PTE_BLOCK: u64 = 0;
-
 const PTE_SH_INNER: u64 = 0b11 << 8;
 const PTE_AP_RW: u64 = 0 << 6;
 const PTE_AP_RW_EL1: u64 = 0b00 << 6;
 const PTE_ATTR_IDX_0: u64 = 0 << 2;
-
 const UXN: u64 = 1 << 54;
 const PXN: u64 = 1 << 53;
 
@@ -44,9 +42,13 @@ const MAIR_NORMAL: u64 = 0xff;
 #[no_mangle]
 pub extern "C" fn map_page_attrs() -> u64 {
     const ATTR_IDX_NORMAL: u64 = 0 << 2;
-    const UXN: u64 = 1 << 54;
-    const PXN: u64 = 1<< 53;
     ATTR_IDX_NORMAL | UXN | PXN
+}
+
+#[no_mangle]
+pub extern "C" fn map_device_attrs() -> u64 {
+    const ATTR_IDX_DEVICE: u64 = 0x4 << 2;
+    ATTR_IDX_DEVICE | UXN | PXN
 }
 
 /*
@@ -63,16 +65,53 @@ pub extern "C" fn map_page(
     let l1_idx = (vaddr >> 30) & 0x1FF;
     let l2_idx = (vaddr >> 21) & 0x1FF;
 
+    //debug
+    let msg0 = b"== map_page() start ==\n\0".as_ptr();
+    unsafe { printp(msg0); }
+
+    // debug
+    let msg1 = b"l1_idx = 0x%x, l2_idx = 0x%x\n\0".as_ptr();
+    unsafe { printp(msg1, l1_idx as u32, l2_idx as u32); }
+    
     // Get L2 table from L1 entry
     let l1_entry = unsafe { l1_tbl.add(l1_idx as usize) };
 
     let l2_tbl: *mut u64 = unsafe {
         if (*l1_entry & PTE_VALID) == 0 {
+
+            // debug
+            let msg2 = b"L1 entry not valid, allocating L2 table...\n\0".as_ptr();
+            printp(msg2);
+
             let l2_page = allocatePhysPages(1); 
+            let l2_page_addr = l2_page as u64;
+
+            // debug
+            let msg3_l2_upper = (l2_page_addr >> 32) as u32;
+            let msg3_l2_lower = (l2_page_addr & 0xFFFF_FFFF) as u32;
+            let msg3 = b"l2_page = 0x%x%08x\n\0".as_ptr();
+            printp(msg3, msg3_l2_upper, msg3_l2_lower);
+
             let tbl_ptr = getPhysAddr(l2_page) as *mut u64;
+            let tbl_addr = tbl_ptr as u64;
+            
+            // debug
+            let msg4 = b"l2_tbl = 0x%llx (from getPhysAddr)\n\0".as_ptr();
+            printp(msg4, tbl_addr);
+
             *l1_entry = (tbl_ptr as u64) | PTE_VALID | PTE_TBL;
+            
+            // debug
+            let msg5 = b"L1 entry updated\n\0".as_ptr();
+            printp(msg5);
+
             tbl_ptr
         } else {
+
+            // debug
+            let msg6 = b"L1 entry already valid, using existing L2 table\n\0".as_ptr();
+            printp(msg6);
+
             (*l1_entry & !0xFFF) as *mut u64
         }
     };
@@ -80,7 +119,7 @@ pub extern "C" fn map_page(
     // Set block entry in L2 for 2MB mapping
     unsafe {
         let l2_entry = l2_tbl.add(l2_idx as usize);
-        *l2_entry = (paddr & !(0x1F_FFFF))
+        let mapped_val = (paddr & !(0x1F_FFFF))
             | PTE_VALID 
             | PTE_AF
             | PTE_ATTR_IDX_0
@@ -88,7 +127,19 @@ pub extern "C" fn map_page(
             | PTE_SH_INNER
             | UXN
             | PXN;
+
+        // debug
+        let msg7_mapped_val_upper = (mapped_val >> 32) as u32;
+        let msg7_mapped_val_lower = (mapped_val & 0xFFFF_FFFF) as u32;
+        let msg7 = b"Writing L2[0x%x] = 0x%x%08x\n\0".as_ptr();
+        printp(msg7, l2_idx as u32, msg7_mapped_val_upper, msg7_mapped_val_lower);
+
+        *l2_entry = mapped_val;
     }
+
+    // debug
+    let msg_done = b"==completed map_page()==\n\0".as_ptr();
+    unsafe { printp(msg_done); }
 }
 
 /*
@@ -111,6 +162,7 @@ pub extern "C" fn map_page(
  *
  * - EL1 stands for Exception Level 1 aka kernel level
  */
+
 
 /*
 #[no_mangle]
@@ -199,6 +251,7 @@ pub extern "C" fn init_mmu(l1_tbl: *mut u64) {
 }
 */
 
+
 use core::ffi::c_char;
 
 #[no_mangle]
@@ -206,8 +259,12 @@ pub extern "C" fn init_mmu(l1_tbl: *const u64) {
     if l1_tbl.is_null() { loop{} }
     unsafe {
         
-        let mair_val: u64 = (0xFF << 0);
-        core::arch::asm!("msr MAIR_EL1, {}", in(reg) mair_val);
+        let mair_val: u64 = 0x00FF;
+        core::arch::asm!(
+            "msr MAIR_EL1, {}", 
+            in(reg) mair_val,
+            options(nostack, preserves_flags)
+            );
 
         let tcr_val: u64 = 0b100100000101 | (16 << 16);
         core::arch::asm!("msr TCR_EL1, {}", in(reg) tcr_val);
@@ -245,6 +302,3 @@ pub extern "C" fn call_print_paddr(paddr: *mut u8) {
     let fmt = b"Rust test: paddr = 0x%llx\n\0".as_ptr();
     unsafe { printp(fmt, addr); }
 }
-
-
-

@@ -24,39 +24,6 @@ void init_pfa_list(void) {
 	physPageArray[PAGE_COUNT - 1].next = NULL; // last page has no next
 	freeList = &physPageArray[0];
 }
-/*
-struct ppage *allocatePhysPages(unsigned int npages) {
-	struct ppage *start = freeList;
-	struct ppage *curr = freeList;
-
-	if (npages == 0 || freeList == NULL) return NULL; // invalid allocation
-	
-	// traverse free list to find 'npages' consecutive pages
-	for (unsigned int i = 0; i < npages; i++) {
-		if (curr == NULL) return NULL; // not enough pages
-		curr = curr->next;
-	}
-
-	// detach allocated pages from free list
-	if (start == freeList) freeList = curr; // update head if we're allocating from head
-	else if (start->prev) start->prev->next = curr; // link prev to next
-	
-	// if curr is not null, curr's previous node is now start's previous node
-	if (curr) curr->prev = start->prev;
-
-	start->prev = NULL;
-
-	if ((uintptr_t)start->physAddr % PAGE_SIZE != 0) {
-		printp("physAddr 0x%x is not page-aligned!\n", start->physAddr);
-		return NULL;
-	} else printp("physAddr 0x%x is page-aligned\n", start->physAddr);
-
-	printp("Allocated %d pages. Starting physical address: 0x%x. New freeList head: 0x%x\n", npages, start->physAddr, freeList->physAddr);
-		
-	return start;
-
-}
-*/
 
 struct ppage *allocatePhysPages(unsigned int npages) {
 	
@@ -64,7 +31,7 @@ struct ppage *allocatePhysPages(unsigned int npages) {
 	if (npages == 0 || freeList == NULL) return NULL;
 	
 	struct ppage *curr = freeList;
-	if ((uintptr_t)curr->physAddr % PAGE_SIZE != 0) printp("Bug: Misaligned physAddr found in free list: 0x%x\n", curr->physAddr);
+	if ((uintptr_t)curr->physAddr % PAGE_SIZE != 0) printp("Misalignment.\n");
 
 	while (curr) {
 		// check for 512-page alignment first
