@@ -82,23 +82,27 @@ void mmuTests() {
 
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
 
-	unsigned long vaddr = 0x40000000;
-	unsigned long paddr = 0x3F000000;
+	unsigned long phys_uart = 0x3F215040;
+	unsigned long virt_uart = 0x40000000;
 
-	map_page(l1_tbl, vaddr, paddr, 0);
+	unsigned long phys_base = phys_uart & ~(0x1FFFF);
+	unsigned long virt_base = virt_uart & ~(0x1FFFF);
 
-	unsigned long l1_idx = (vaddr >> 30) & 0x1FF;
-	unsigned long l2_idx = (vaddr >> 21) & 0x1FF;
+	map_page(l1_tbl, virt_base, phys_base, 0);
 
+	unsigned long l1_idx = (virt_base >> 30) & 0x1FF;
+	unsigned long l2_idx = (virt_base >> 21) & 0x1FF;
 	unsigned long l1_entry = l1_tbl[l1_idx];
-	printp("L1[%d] = 0x%x\n", (int)l1_idx, l1_entry);
-
 	unsigned long *l2_tbl = (unsigned long *)(l1_entry & ~0xFFFUL);
 	unsigned long l2_entry = l2_tbl[l2_idx];
 
+	printp("L1[%d] = 0x%x\n", (int)l1_idx, l1_entry);
 	printp("L2[%d] = 0x%x\n", (int)l2_idx, l2_entry);
 
+	C_init_mmu(l1_tbl);
 
+	volatile unsigned int *uart_reg = (volatile unsigned int *)virt_uart;
+	*uart_reg = 'X';
 
 /*	
  	unsigned long long *l1_tbl = (unsigned long long *)raw_l1_phys;

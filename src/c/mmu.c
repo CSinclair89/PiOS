@@ -88,36 +88,44 @@ int C_map_page(
 	printp("completed map_page()\n");
 }
 
-/*
-void C_init_mmu(*l1_tbl) {
+
+void C_init_mmu(unsigned long *l1_tbl) {
 	if (l1_tbl == NULL) return;
 
 	unsigned long mair_val = 0x00FF;
-	asm("msr MAIR_EL1, {}", mair_val);
+	asm volatile("msr MAIR_EL1, %0" :: "r"(mair_val));
 
-	unsigned long tcr_val = 
-	asm("msr TCR_EL1, {}", tcr_val);
-	asm("msr TTBR0_EL1, {}", (unsigned long)l1_tbl);
+	unsigned long tcr_val = (64UL << 0)
+		| (0b00UL << 6)
+		| (0b00UL << 8)
+		| (0b11UL << 12)
+		| (0b0UL << 14)
+		| (0UL << 23);
 
-	asm("dsb ish");
-	asm("isb");
+	asm volatile("msr TCR_EL1, %0" :: "r"(tcr_val));
+	asm volatile("msr TTBR0_EL1, %0" :: "r"(l1_tbl));
 
-	unsigned long sctlr_el1;
-	asm(
-		"mrs {val}, SCTLR_EL1",
-		"orr {val}, {val}, {bit}",
-		"msr SCTLR_EL1, {val}",
-		sctlr_el1, 1
-	   );
+	asm volatile("dsb ish");
+	asm volatile("isb");
+
+	unsigned long sctlr;
+	asm volatile("mrs %0, SCTLR_EL1" : "=r"(sctlr));
+
+	sctlr |= (1 << 0);
+	sctlr |= (1 << 2);
+	sctlr |= (1 << 12);
+
+	asm volatile("msr SCTLR_EL1, %0" :: "r"(sctlr));
+	asm volatile("isb");
 
 	unsigned long new_sctlr;
-	asm("mrs {}, SCTLR_EL1", new_sctlr);
+	asm volatile("mrs %0, SCTLR_EL1" : "=r"(new_sctlr));
 
-	printp("SCTLR_EL1 = 0x%x\n", new_sctlr);
+	printp("SCTLR_EL1 = 0x%x\n", (unsigned int)new_sctlr);
 
 }
 
-*/
+
 
 
 
