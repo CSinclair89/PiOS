@@ -6,17 +6,27 @@
  */
 
 #define MU_10_PHYSICAL 0x3F215040
-#define MU_10_VIRTUAL (0x40000000 + 0x5040)
+
+#define UART_OFFSET (0x3F215040 & 0x1FFFFF)
+#define VIRT_UART_BASE 0x40000000
+#define MU_10_VIRTUAL (VIRT_UART_BASE + UART_OFFSET)
 
 int putp(int data) {
 	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_PHYSICAL;
 	*mu10 = (unsigned int)(data & 0xFF);
 	return data;
 }
-
+/*
 int putv(int data) {
 	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_VIRTUAL;
 	*mu10 = (unsigned int)(data & 0xFF);
+	return data;
+}
+*/
+
+int putv(char data) {
+	volatile unsigned int *uart_dr = (volatile unsigned int *)MU_10_VIRTUAL;
+	*uart_dr = (unsigned int)data;
 	return data;
 }
 
@@ -64,7 +74,7 @@ size_t strLen(const char *str) {
 }
 
 int toLower(int c) {
-	if (c < 'a') c-= 'a' - 'A';
+	if (c >= 'A' && c <= 'Z') return c + ('a' - 'A');
 	return c;
 }
 
@@ -109,6 +119,26 @@ static void outs(charptr lp) {
  * as directed by the padding and position flags
  */
 
+static void outnum(unsigned long long num, const unsigned base) {
+	char outbuf[32];
+	int i = 0;
+	const char digits[] = "0123456789ABCDEF";
+
+	if (num == 0) {
+		out_char('0');
+		return;
+	}
+
+	while (num > 0 && i < sizeof(outbuf)) {
+		outbuf[i++] = digits[num % base];
+		num /= base;
+	}
+
+	while (--i >= 0) out_char(outbuf[i]);
+}
+
+
+/*
 static void outnum(long num, const long base) {
 	charptr cp;
 	int negative;
@@ -136,6 +166,7 @@ static void outnum(long num, const long base) {
 	while (cp >= outbuf) out_char(*cp--);
 	padding(left_flag);
 }
+*/
 
 /*
  * This routine get a num from the format string
@@ -227,7 +258,9 @@ try_next:
 				continue;
 			}
 		case 'x':
-			outnum((long)va_arg(argp, int), 16L);
+		case 'X':
+			if (long_flag) outnum(va_arg(argp, unsigned long), 16);
+			else outnum((unsigned long)va_arg(argp, unsigned int), 16);
 			continue;
 		case 's':
 			outs(va_arg(argp, charptr));

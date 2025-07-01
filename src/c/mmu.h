@@ -5,9 +5,10 @@
 
 #define NUM_PAGES 128
 #define PAGE_SIZE_2MB 0x200000
+#define PAGE_MASK_2MB (~(PAGE_SIZE_2MB - 1))
 
-int C_map_device_attrs();
-int C_map_page(
+unsigned long C_map_device_attrs();
+void C_map_page(
 		unsigned long *l1_tbl, 
 		unsigned long vaddr, 
 		unsigned long paddr, 

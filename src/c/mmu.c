@@ -10,6 +10,7 @@
 #define PTE_SH_INNER 	(3UL << 8)
 #define PTE_AP_RW_EL1 	(0UL << 6)
 #define PTE_ATTR_IDX_0 	(0UL << 2)
+#define PTE_ATTR_IDX_1 	(1UL << 2)
 
 // Execute-never Flags
 #define UXN 		(1ULL << 54)
@@ -19,11 +20,18 @@
 #define MAIR_NORMAL	0xFF
 #define MAIR_DEVICE_NGNRE 0x04
 
-int C_map_device_attrs() {
-	PTE_ATTR_IDX_0 | UXN | PXN;
+unsigned long C_map_attrs() {
+	return PTE_AF 
+		| PTE_SH_INNER
+		| PTE_AP_RW_EL1 
+		| PTE_ATTR_IDX_0 
+		| UXN 
+		| PXN; 
 }
 
-int C_map_page(
+unsigned long C_map_device_attrs() { return PTE_ATTR_IDX_1 | UXN | PXN; }
+
+void C_map_page(
 	unsigned long *l1_tbl, 
 	unsigned long vaddr, 
 	unsigned long paddr, 
@@ -92,17 +100,18 @@ int C_map_page(
 void C_init_mmu(unsigned long *l1_tbl) {
 	if (l1_tbl == NULL) return;
 
-	unsigned long mair_val = 0x00FF;
+	unsigned long mair_val = (MAIR_NORMAL << 0) | (MAIR_DEVICE_NGNRE << 8);
 	asm volatile("msr MAIR_EL1, %0" :: "r"(mair_val));
 
-	unsigned long tcr_val = (64UL << 0)
+	unsigned long tcr_val = 
+		  (16UL << 0)
 		| (0b00UL << 6)
 		| (0b00UL << 8)
 		| (0b11UL << 12)
-		| (0b0UL << 14)
-		| (0UL << 23);
+		| (0b0UL << 14);
 
 	asm volatile("msr TCR_EL1, %0" :: "r"(tcr_val));
+
 	asm volatile("msr TTBR0_EL1, %0" :: "r"(l1_tbl));
 
 	asm volatile("dsb ish");

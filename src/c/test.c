@@ -81,29 +81,102 @@ void mmuTests() {
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
 
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
-
+/*
 	unsigned long phys_uart = 0x3F215040;
 	unsigned long virt_uart = 0x40000000;
 
-	unsigned long phys_base = phys_uart & ~(0x1FFFF);
-	unsigned long virt_base = virt_uart & ~(0x1FFFF);
+	unsigned long phys_base = phys_uart & PAGE_MASK_2MB;
+	unsigned long virt_base = virt_uart & PAGE_MASK_2MB;
 
-	map_page(l1_tbl, virt_base, phys_base, 0);
+	unsigned long attrs = C_map_device_attrs();
+	C_map_page(l1_tbl, virt_base, phys_base, attrs);
 
 	unsigned long l1_idx = (virt_base >> 30) & 0x1FF;
 	unsigned long l2_idx = (virt_base >> 21) & 0x1FF;
 	unsigned long l1_entry = l1_tbl[l1_idx];
+	unsigned long l1_upper = l1_entry >> 32;
+	unsigned long l1_lower = l1_entry & 0xFFFFFFFF;
+	unsigned long *l2_tbl = (unsigned long *)(l1_entry & ~0xFFFUL);
+	unsigned long l2_entry = l2_tbl[l2_idx];
+	unsigned long l2_upper = l2_entry >> 32;
+	unsigned long l2_lower = l2_entry & 0xFFFFFFFF;
+
+	printp("L1[%d] = upper: 0x%08x, lower: 0x%08x\n", (int)l1_idx, (unsigned int)l1_upper, (unsigned int)l1_lower);
+	printp("L2[%d] = upper: 0x%08x, lower: 0x%08x\n", (int)l2_idx, (unsigned int)l2_upper, (unsigned int)l2_lower);
+
+*/
+	unsigned long phys_test = 0x2800000;
+	unsigned long virt_test = 0x40000000;
+	unsigned long pbase = phys_test & ~(0x1FFFFF);
+	unsigned long vbase = virt_test & ~(0x1FFFFF);
+	unsigned long offset = phys_test & 0x1FFFFF;
+	unsigned long vaddr = vbase + offset;
+
+	unsigned long attrs = C_map_attrs();
+	C_map_page(l1_tbl, vbase, pbase, attrs);
+
+	unsigned long l1_idx = (vbase >> 30) & 0x1FF;
+	unsigned long l2_idx = (vbase >> 21) & 0x1FF;
+	unsigned long l1_entry = l1_tbl[l1_idx];
 	unsigned long *l2_tbl = (unsigned long *)(l1_entry & ~0xFFFUL);
 	unsigned long l2_entry = l2_tbl[l2_idx];
 
-	printp("L1[%d] = 0x%x\n", (int)l1_idx, l1_entry);
-	printp("L2[%d] = 0x%x\n", (int)l2_idx, l2_entry);
+	unsigned long l1_upper = l1_entry >> 32;
+	unsigned long l1_lower = l1_entry & 0xFFFFFFFF;
+	unsigned long l2_upper = l2_entry >> 32;
+	unsigned long l2_lower = l2_entry & 0xFFFFFFFF;
+
+	printp("L1[%d] = 0x%x%08x\n", (int)l1_idx, l1_upper, l1_lower);
+	printp("L2[%d] = 0x%x%08x\n", (int)l2_idx, l2_upper, l2_lower);
 
 	C_init_mmu(l1_tbl);
 
-	volatile unsigned int *uart_reg = (volatile unsigned int *)virt_uart;
-	*uart_reg = 'X';
+	unsigned long tcr_val, ttbr0_val;
+	asm volatile("mrs %0, TCR_EL1" : "=r"(tcr_val));
+	asm volatile("mrs %0, TTBR0_EL1" : "=r"(ttbr0_val));
 
+	unsigned long tcr_upper = tcr_val >> 32;
+	unsigned long tcr_lower = tcr_val & 0xFFFFFFFF;
+	unsigned long ttbr0_upper = ttbr0_val >> 32;
+	unsigned long ttbr0_lower = ttbr0_val & 0xFFFFFFFF;
+
+	printp("TCR_EL1 = 0x%x%08x\n", (int)tcr_upper, (int)tcr_lower);
+	printp("TTBR0_EL1 = 0x%x%08x\n", (int)ttbr0_upper, (int)ttbr0_lower);
+
+	unsigned int testval = 0xDEADBEEF;
+
+	asm volatile("dsb sy");
+	asm volatile(
+			"str %w[value], [%[vaddr]]"
+			:: [value] "r"(testval), [vaddr] "r"(vaddr)
+			: "memory"
+		    );
+	asm volatile("dsb sy");
+
+	unsigned int phys_read = *(volatile unsigned int *)pbase;
+	unsigned int virt_read;
+	asm volatile("dsb sy; isb");
+	asm volatile(
+			"ldr %w[out], [%[vaddr]]"
+			: [out] "=r"(virt_read)
+			: [vaddr] "r"(vaddr) 
+			: "memory"
+			);
+
+	printp("Phys read: 0x%x\n", phys_read);
+	printp("Virt read: 0x%x\n", virt_read);
+
+
+
+//	printv("Hello\n");
+
+/*
+#define UART_OFFSET (0x3F215040 & 0x1FFFFF)
+	volatile unsigned int *uart_reg = (volatile unsigned int *)(virt_base + UART_OFFSET);
+	*uart_reg = 'X';
+	putv('X');
+	printv("Hello\n");
+*/
 /*	
  	unsigned long long *l1_tbl = (unsigned long long *)raw_l1_phys;
 
