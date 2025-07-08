@@ -79,8 +79,64 @@ void mmuTests() {
 
 	struct ppage *l1_page = allocatePhysPages(1);
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
-
+	printp("Address of L1 Table: 0x%x\n", l1_tbl);
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
+
+	unsigned long phys_test = 0x10000000;
+	unsigned long virt_test = 0x40000000;
+	unsigned long pbase = phys_test & ~(0x1FFFFF);
+	unsigned long vbase = virt_test & ~(0x1FFFFF);
+	unsigned long offset = phys_test & 0x1FFFFF;
+	unsigned long vaddr = vbase + offset;
+	unsigned long attrs = C_map_attrs();
+
+	C_map_page(l1_tbl, virt_test, phys_test, attrs);
+
+	unsigned long l1_phys = (unsigned long)getPhysAddr(l1_page);
+
+	C_map_page(l1_tbl, l1_phys, l1_phys, attrs);
+
+	asm volatile("dsb sy");
+
+	C_init_mmu(l1_page);
+
+	asm volatile("dsb sy");
+	asm volatile("str %w[value], [%[vaddr]]"
+			:: [value] "r"(0xDEADBEEF), [vaddr] "r"(vaddr)
+			: "memory");
+	asm volatile("dsb sy");
+
+	unsigned int virt_read;
+	asm volatile("ldr %w[out], [%[vaddr]]"
+			: [out] "=r"(virt_read)
+			: [vaddr] "r"(vaddr)
+			: "memory");
+	printp("Virt read #1: 0x%x\n", virt_read);
+
+	unsigned int *phys_ptr = (unsigned int *)phys_test;
+	*phys_ptr = 0xCAFEBABE;
+
+	asm volatile("ldr %w[out], [%[vaddr]]"
+			: [out] "=r"(virt_read)
+			: [vaddr] "r"(vaddr)
+			: "memory");
+
+	printp("Virt read #2: 0x%x\n", virt_read);
+
+	unsigned long esr, far, mair;
+	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));
+	asm volatile("mrs %0, FAR_EL1" : "=r"(far));
+	asm volatile("mrs %0, MAIR_EL1" : "=r"(mair));
+	printp("ESR_EL1 = 0x%x\n", (unsigned int)esr);
+	printp("FAR_EL1 = 0x%x\n", (unsigned int)far);
+	printp("MAIR_EL1 = 0x%x%08x\n", 
+			(int)(mair >> 32),
+			(int)(mair & 0xFFFFFFFF));
+
+
+	printp("l1_tbl virt: 0x%x\n", (unsigned int)l1_tbl);
+	printp("l1_tbl phys: 0x%x\n", (unsigned int)getPhysAddr(l1_tbl));
+	
 /*
 	unsigned long phys_uart = 0x3F215040;
 	unsigned long virt_uart = 0x40000000;
@@ -105,7 +161,9 @@ void mmuTests() {
 	printp("L2[%d] = upper: 0x%08x, lower: 0x%08x\n", (int)l2_idx, (unsigned int)l2_upper, (unsigned int)l2_lower);
 
 */
-	unsigned long phys_test = 0x2800000;
+
+/*
+	unsigned long phys_test = 0x10000000;
 	unsigned long virt_test = 0x40000000;
 	unsigned long pbase = phys_test & ~(0x1FFFFF);
 	unsigned long vbase = virt_test & ~(0x1FFFFF);
@@ -113,11 +171,15 @@ void mmuTests() {
 	unsigned long vaddr = vbase + offset;
 
 	unsigned long attrs = C_map_attrs();
+	*(volatile unsigned int *)phys_test = 0xDEADBEEF;
 	C_map_page(l1_tbl, vbase, pbase, attrs);
+
+
 
 	unsigned long l1_idx = (vbase >> 30) & 0x1FF;
 	unsigned long l2_idx = (vbase >> 21) & 0x1FF;
 	unsigned long l1_entry = l1_tbl[l1_idx];
+
 	unsigned long *l2_tbl = (unsigned long *)(l1_entry & ~0xFFFUL);
 	unsigned long l2_entry = l2_tbl[l2_idx];
 
@@ -129,8 +191,40 @@ void mmuTests() {
 	printp("L1[%d] = 0x%x%08x\n", (int)l1_idx, l1_upper, l1_lower);
 	printp("L2[%d] = 0x%x%08x\n", (int)l2_idx, l2_upper, l2_lower);
 
-	C_init_mmu(l1_tbl);
+	unsigned long l2_tbl_paddr = l1_entry & ~0xFFFUL;
+	printp("L2 Table Paddr post-map check: 0x%x%08x\n",
+			(unsigned int)(l2_tbl_paddr >> 32),
+			(unsigned int)(l2_tbl_paddr & 0xFFFFFFFF));
+	C_map_page(l1_tbl, l2_tbl_paddr, l2_tbl_paddr, attrs);
 
+	printp("Post-map check: L2[%d] = 0x%x%08x\n",
+			(int)l2_idx,
+			(unsigned int)(l2_tbl[l2_idx] >> 32),
+			(unsigned int)(l2_tbl[l2_idx] & 0xFFFFFFFF));
+
+	asm volatile("tlbi vmalle1; dsb ish; isb");
+*/
+
+/*
+	unsigned int newtest = 0x12345678;
+
+	asm volatile("dsb sy");
+	asm volatile("str %w[value], [%[vaddr]]"
+			:: [value] "r"(newtest), [vaddr] "r"(vaddr)
+			: "memory");
+	asm volatile("dsb sy");
+
+	unsigned int virt_test_read;
+	asm volatile(
+			"ldr %w[out], [%[vaddr]]"
+			: [out] "=r"(virt_test_read)
+			: [vaddr] "r"(vaddr)
+			: "memory"
+		    );
+	printp("Virt Test Read: 0x%x\n", virt_test_read);
+
+	asm volatile("tlbi vmalle1; dsb ish; isb");
+	
 	unsigned long tcr_val, ttbr0_val;
 	asm volatile("mrs %0, TCR_EL1" : "=r"(tcr_val));
 	asm volatile("mrs %0, TTBR0_EL1" : "=r"(ttbr0_val));
@@ -162,10 +256,12 @@ void mmuTests() {
 			: [vaddr] "r"(vaddr) 
 			: "memory"
 			);
-
+	
+	printp("Attrs = 0x%x\n", attrs);
 	printp("Phys read: 0x%x\n", phys_read);
 	printp("Virt read: 0x%x\n", virt_read);
-
+*/
+	
 
 
 //	printv("Hello\n");

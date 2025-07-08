@@ -14,7 +14,7 @@ void C_map_page(
 		unsigned long paddr, 
 		unsigned long attrs
 		);
-void C_init_mmu(unsigned long *l1_tbl);
+void C_init_mmu(struct ppage *l1_page);
 
 struct page_directory_entry {
    unsigned long present       : 1;   // Page present in memory

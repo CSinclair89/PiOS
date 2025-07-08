@@ -17,6 +17,8 @@
 #define PXN 		(1ULL << 53)
 
 // Memory Attribute Indirection Register Attribute Values
+#define MAIR_IDX0_NORMAL 0xFFUL
+#define MAIR_EL1_VAL (MAIR_IDX0_NORMAL << (0 * 8))
 #define MAIR_NORMAL	0xFF
 #define MAIR_DEVICE_NGNRE 0x04
 
@@ -55,7 +57,7 @@ void C_map_page(
 		printp("L1 entry not valid, allocating L2 table...\n");
 
 		struct ppage *l2_page = allocatePhysPages(1);
-		unsigned long l2_paddr = (unsigned long)l2_page;
+		unsigned long l2_paddr = (unsigned long)getPhysAddr(l2_page);
 
 		printp("l2_page = 0x%x%08x\n", 
 				(unsigned int)(l2_paddr >> 32),
@@ -76,16 +78,18 @@ void C_map_page(
 
 	unsigned long *l2_entry = &l2_tbl[l2_idx];
 
+	unsigned long long mapped_val = (paddr & ~0x1FFFFFUL) | 0x705;	
+/*
 	unsigned long long mapped_val = 
 		((unsigned long long)(paddr & ~0x1FFFFFUL))
 		| PTE_VALID
 		| PTE_AF
 		| PTE_ATTR_IDX_0
 		| PTE_AP_RW_EL1
-		| PTE_SH_INNER
+		| PTE_SH_INNER;
 		| UXN
 		| PXN;
-
+*/
 	printp("Writing L2[0x%x] = 0x%x%08x\n",
 			(unsigned int)l2_idx,
 			(unsigned int)(mapped_val >> 32),
@@ -93,14 +97,23 @@ void C_map_page(
 
 	*l2_entry = (unsigned long)mapped_val;
 
+	printp("Wrote to L2[%d]: 0x%x%08x\n",
+			(int)l2_idx,
+			(unsigned int)(*l2_entry >> 32),
+			(unsigned int)(*l2_entry & 0xFFFFFFFF));
+
 	printp("completed map_page()\n");
 }
 
 
-void C_init_mmu(unsigned long *l1_tbl) {
-	if (l1_tbl == NULL) return;
+void C_init_mmu(struct ppage *l1_page) {
+	if (l1_page == NULL) return;
 
-	unsigned long mair_val = (MAIR_NORMAL << 0) | (MAIR_DEVICE_NGNRE << 8);
+	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
+	unsigned long l1_phys = (unsigned long)getPhysAddr(l1_page);
+
+//	unsigned long mair_val = (MAIR_NORMAL << 0) | (MAIR_DEVICE_NGNRE << 8);
+	unsigned long mair_val = MAIR_EL1_VAL;
 	asm volatile("msr MAIR_EL1, %0" :: "r"(mair_val));
 
 	unsigned long tcr_val = 
@@ -112,10 +125,11 @@ void C_init_mmu(unsigned long *l1_tbl) {
 
 	asm volatile("msr TCR_EL1, %0" :: "r"(tcr_val));
 
-	asm volatile("msr TTBR0_EL1, %0" :: "r"(l1_tbl));
+	asm volatile("msr TTBR0_EL1, %0" :: "r"(l1_phys));
 
 	asm volatile("dsb ish");
 	asm volatile("isb");
+	asm volatile("tlbi vmalle1; dsb ish; isb");
 
 	unsigned long sctlr;
 	asm volatile("mrs %0, SCTLR_EL1" : "=r"(sctlr));
