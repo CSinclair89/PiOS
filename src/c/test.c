@@ -97,19 +97,21 @@ void mmuTests() {
 	C_map_page(l1_tbl, l1_phys, l1_phys, attrs);
 
 	asm volatile("dsb sy");
+	
+	unsigned long newTestVaddr = 0x2A00000UL;
 
+	C_map_page(l1_tbl, newTestVaddr, 0x2A00000UL, C_page_desc_norm);
 	C_init_mmu(l1_page);
 
 	asm volatile("dsb sy");
 	asm volatile("str %w[value], [%[vaddr]]"
-			:: [value] "r"(0xDEADBEEF), [vaddr] "r"(vaddr)
+			:: [value] "r"(0xCAFEBABE), [vaddr] "r"(newTestVaddr)
 			: "memory");
-	asm volatile("dsb sy");
 
 	unsigned int virt_read;
-	asm volatile("ldr %w[out], [%[vaddr]]"
+	asm volatile("ldr %w[out], [%[newTestVaddr]]"
 			: [out] "=r"(virt_read)
-			: [vaddr] "r"(vaddr)
+			: [newTestVaddr] "r"(newTestVaddr)
 			: "memory");
 	printp("Virt read #1: 0x%x\n", virt_read);
 
@@ -117,11 +119,11 @@ void mmuTests() {
 	*phys_ptr = 0xCAFEBABE;
 
 	asm volatile("ldr %w[out], [%[vaddr]]"
-			: [out] "=r"(virt_read)
+			: [out] "=r"(virt_test)
 			: [vaddr] "r"(vaddr)
 			: "memory");
 
-	printp("Virt read #2: 0x%x\n", virt_read);
+	printp("Virt read #2: 0x%x\n", virt_test);
 
 	unsigned long esr, far, mair;
 	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));

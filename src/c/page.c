@@ -4,28 +4,39 @@
 
 // #define PAGE_SIZE (2 * 1024 * 1024)
 
-#define PAGE_SIZE 0x200000
+#define PAGE_SIZE 0x200000UL
 
 struct ppage physPageArray[PAGE_COUNT];
 struct ppage *freeList = NULL;
 
 void init_pfa_list(void) {
+	
+	extern char __end;
+	uintptr_t kernel_end = (uintptr_t)&__end;
+
+	uintptr_t base = (kernel_end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+
 	for (int i = 0; i < PAGE_COUNT; i++) {
+
+		physPageArray[i].physAddr = (void *)(base + i * PAGE_SIZE);
+
 		if (i < PAGE_COUNT - 1) {
 			physPageArray[i].next = &physPageArray[i + 1]; // forward link
 			physPageArray[i + 1].prev = &physPageArray[i]; // backward link
 		}
-
+/*
 		physPageArray[i].physAddr = (void *)(uintptr_t)(i * PAGE_SIZE); // test data value
 		
 		if (((uintptr_t)physPageArray[i].physAddr & 0x1FFFFF) != 0) {
 			printp("init_pfa_list: physAddr[%d] = 0x%x NOT 2MB aligned!\n", i, (unsigned int)(uintptr_t)physPageArray[i].physAddr);
 		}
-
+*/
 	}
 	physPageArray[PAGE_COUNT - 1].next = NULL; // last page has no next
+	physPageArray[0].prev = NULL;
 	freeList = &physPageArray[0];
-	physPageArray[1].prev = NULL;
+	printp("Init PFA[0] addr = 0x%x\n", physPageArray[0].physAddr);
+//	physPageArray[1].prev = NULL;
 }
 
 struct ppage *allocatePhysPages(unsigned int npages) {	

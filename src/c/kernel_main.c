@@ -13,6 +13,7 @@ void kernel_main() {
     
 	// Initialize bss segment variables and respective pointers
   	extern char __bss_start, __bss_end;
+	
 	char *bssStart, *bssEnd;  
 	
 	// Define bssStart and bssEnd variables
@@ -22,6 +23,13 @@ void kernel_main() {
 	
 	// Set bss segment to 0
 	for (; i < bssEnd; i++) *i = 0;
+
+	printp("End of kernel mem: \n");
+	extern char __end;
+	char *endStart = &__end;
+	printp("__bss_start addr: 0x%x\n", bssStart);
+	printp("__bss_end addr: 0x%x\n", bssEnd);
+	printp("__end addr: 0x%x\n", endStart);
 
 /*
  * Begin Page Frame Allocator

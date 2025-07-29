@@ -7,6 +7,7 @@
 #define PAGE_SIZE_2MB 0x200000
 #define PAGE_MASK_2MB (~(PAGE_SIZE_2MB - 1))
 
+unsigned long C_page_desc_norm();
 unsigned long C_map_device_attrs();
 void C_map_page(
 		unsigned long *l1_tbl, 
