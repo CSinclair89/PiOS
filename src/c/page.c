@@ -1,10 +1,8 @@
 #include "page.h"
 #include "io.h"
 
-
-// #define PAGE_SIZE (2 * 1024 * 1024)
-
 #define PAGE_SIZE 0x200000UL
+#define CACHE_LINE_SIZE 64
 
 struct ppage physPageArray[PAGE_COUNT];
 struct ppage *freeList = NULL;
@@ -134,3 +132,22 @@ void printFreeList(void) {
 }
 
 void *getPhysAddr(struct ppage *page) { return page->physAddr; }
+
+void cleanPageCache(void *addr) {
+	unsigned long start = (unsigned long)addr;
+	unsigned long end = start + PAGE_SIZE;
+
+	for (unsigned long i = start; i < end; i += CACHE_LINE_SIZE) {
+		asm volatile (
+				"dc civac, %0\n"
+				:
+				: "r" (i)
+				: "memory"
+			     );
+	}
+
+	asm volatile (
+			"dsb sy\n"
+			"isb\n"
+		     );
+}

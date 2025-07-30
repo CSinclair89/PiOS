@@ -73,57 +73,52 @@ void print_page_tables_after_MMU(unsigned long long *l1) {
 void mmuTests() {
 	
 	printp("--MMU TEST--\n\n");
-
 	init_pfa_list();
 	freeList = &physPageArray[20];
 
 	struct ppage *l1_page = allocatePhysPages(1);
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
-	printp("Address of L1 Table: 0x%x\n", l1_tbl);
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
 
-	unsigned long phys_test = 0x10000000;
+	struct ppage *test_page = allocatePhysPages(1);
+	unsigned long phys_test = getPhysAddr(test_page);
 	unsigned long virt_test = 0x40000000;
-	unsigned long pbase = phys_test & ~(0x1FFFFF);
-	unsigned long vbase = virt_test & ~(0x1FFFFF);
-	unsigned long offset = phys_test & 0x1FFFFF;
-	unsigned long vaddr = vbase + offset;
 	unsigned long attrs = C_map_attrs();
-
 	C_map_page(l1_tbl, virt_test, phys_test, attrs);
-
-	unsigned long l1_phys = (unsigned long)getPhysAddr(l1_page);
-
-	C_map_page(l1_tbl, l1_phys, l1_phys, attrs);
-
-	asm volatile("dsb sy");
 	
-	unsigned long newTestVaddr = 0x2A00000UL;
+	unsigned long testVaddr = 0x2A00000UL;
+	C_map_page(l1_tbl, testVaddr, 0x2A00000UL, C_page_desc_norm);
 
-	C_map_page(l1_tbl, newTestVaddr, 0x2A00000UL, C_page_desc_norm);
+	struct ppage *sharedPage = allocatePhysPages(1);
+	unsigned long sharedPaddr = (unsigned long)getPhysAddr(sharedPage);
+	unsigned long sharedVaddr1 = 0x2C00000UL;
+	unsigned long sharedVaddr2 = 0x2E00000UL;
+	unsigned long C_page_desc_nc = 0x00000000 | 0b00 << 2;
+	C_map_page(l1_tbl, sharedVaddr1, sharedPaddr, C_page_desc_nc);
+	C_map_page(l1_tbl, sharedVaddr2, sharedPaddr, C_page_desc_nc);
+
 	C_init_mmu(l1_page);
 
-	asm volatile("dsb sy");
-	asm volatile("str %w[value], [%[vaddr]]"
-			:: [value] "r"(0xCAFEBABE), [vaddr] "r"(newTestVaddr)
-			: "memory");
+	asm volatile(
+			"dsb ish\n"
+			"tlbi vmalle1\n"
+			"dsb ish\n"
+			"isb\n"
+		    );
 
-	unsigned int virt_read;
-	asm volatile("ldr %w[out], [%[newTestVaddr]]"
-			: [out] "=r"(virt_read)
-			: [newTestVaddr] "r"(newTestVaddr)
-			: "memory");
-	printp("Virt read #1: 0x%x\n", virt_read);
+	// Virtual memory test
+	*(unsigned int *)testVaddr = 0xDEADBEEF;
+	unsigned int read_back = *(unsigned int *)testVaddr;
+	printp("Virt read #1: 0x%x\n", read_back);
 
-	unsigned int *phys_ptr = (unsigned int *)phys_test;
-	*phys_ptr = 0xCAFEBABE;
-
-	asm volatile("ldr %w[out], [%[vaddr]]"
-			: [out] "=r"(virt_test)
-			: [vaddr] "r"(vaddr)
-			: "memory");
-
-	printp("Virt read #2: 0x%x\n", virt_test);
+	// Aliasing test w/ shared physical page
+	printp("sharedPaddr = 0x%x\n", sharedPaddr);
+	unsigned int *ptr1 = (unsigned int *)sharedVaddr1;
+	*ptr1 = 0xCAFEBABE;
+	cleanPageCache(ptr1);	
+	unsigned int *ptr2 = (unsigned int *)sharedVaddr2;
+	unsigned int val = *ptr2;
+	printp("Aliased read: 0x%x\n", val);
 
 	unsigned long esr, far, mair;
 	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));
@@ -134,7 +129,6 @@ void mmuTests() {
 	printp("MAIR_EL1 = 0x%x%08x\n", 
 			(int)(mair >> 32),
 			(int)(mair & 0xFFFFFFFF));
-
 
 	printp("l1_tbl virt: 0x%x\n", (unsigned int)l1_tbl);
 	printp("l1_tbl phys: 0x%x\n", (unsigned int)getPhysAddr(l1_tbl));

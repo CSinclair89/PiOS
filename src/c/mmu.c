@@ -86,11 +86,13 @@ void C_map_page(
 	unsigned long long mapped_val = 
 		((unsigned long long)(paddr & ~0x1FFFFFUL))
 		| PTE_VALID		// 1UL << 0
-		| PTE_TBL		// 1UL << 1
+//		| PTE_TBL		// 1UL << 1
 		| PTE_AF		// 1UL << 10
 		| PTE_ATTR_IDX_1	// 1UL << 2
 		| PTE_AP_RW_EL1		// 0UL << 6
-		| PTE_SH_INNER;		// 3UL << 8
+		| PTE_SH_INNER;
+//		| UXN;
+//		| PXN;		// 3UL << 8
 
 	printp("Writing L2[0x%x] = 0x%x%08x\n",
 			(unsigned int)l2_idx,
