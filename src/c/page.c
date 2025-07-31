@@ -8,10 +8,9 @@ struct ppage physPageArray[PAGE_COUNT];
 struct ppage *freeList = NULL;
 
 void init_pfa_list(void) {
-	
+	// Establish base address after BSS segment
 	extern char __end;
 	uintptr_t kernel_end = (uintptr_t)&__end;
-
 	uintptr_t base = (kernel_end + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
 	for (int i = 0; i < PAGE_COUNT; i++) {
@@ -22,19 +21,10 @@ void init_pfa_list(void) {
 			physPageArray[i].next = &physPageArray[i + 1]; // forward link
 			physPageArray[i + 1].prev = &physPageArray[i]; // backward link
 		}
-/*
-		physPageArray[i].physAddr = (void *)(uintptr_t)(i * PAGE_SIZE); // test data value
-		
-		if (((uintptr_t)physPageArray[i].physAddr & 0x1FFFFF) != 0) {
-			printp("init_pfa_list: physAddr[%d] = 0x%x NOT 2MB aligned!\n", i, (unsigned int)(uintptr_t)physPageArray[i].physAddr);
-		}
-*/
 	}
 	physPageArray[PAGE_COUNT - 1].next = NULL; // last page has no next
 	physPageArray[0].prev = NULL;
 	freeList = &physPageArray[0];
-	printp("Init PFA[0] addr = 0x%x\n", physPageArray[0].physAddr);
-//	physPageArray[1].prev = NULL;
 }
 
 struct ppage *allocatePhysPages(unsigned int npages) {	
@@ -72,7 +62,6 @@ struct ppage *allocatePhysPages(unsigned int npages) {
 				printp("physAddr 0x%x is NOT page-aligned!\n", curr->physAddr);
 				return NULL;
 			} else printp("physAddr0x%x is page-aligned\n", curr->physAddr);
-			printp("Allocated %d pages. Starting paddr: 0x%x. New freeList head: 0x%x\n", npages, curr->physAddr, freeList ? freeList->physAddr : 0);
 			return curr;
 		}
 		curr = curr->next;
@@ -140,6 +129,25 @@ void cleanPageCache(void *addr) {
 	for (unsigned long i = start; i < end; i += CACHE_LINE_SIZE) {
 		asm volatile (
 				"dc civac, %0\n"
+				:
+				: "r" (i)
+				: "memory"
+			     );
+	}
+
+	asm volatile (
+			"dsb sy\n"
+			"isb\n"
+		     );
+}
+
+void invalidatePageCache(void *addr) {
+	unsigned long start = (unsigned long)addr;
+	unsigned long end = start + PAGE_SIZE;
+
+	for (unsigned long i = start; i < end; i += CACHE_LINE_SIZE) {
+		asm volatile (
+				"dc ivac, %0\n"
 				:
 				: "r" (i)
 				: "memory"

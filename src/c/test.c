@@ -70,55 +70,41 @@ void print_page_tables_after_MMU(unsigned long long *l1) {
 		}
 	}
 }
-void mmuTests() {
-	
+void mmuTests() {	
 	printp("--MMU TEST--\n\n");
 	init_pfa_list();
 	freeList = &physPageArray[20];
-
 	struct ppage *l1_page = allocatePhysPages(1);
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
-
 	struct ppage *test_page = allocatePhysPages(1);
 	unsigned long phys_test = getPhysAddr(test_page);
 	unsigned long virt_test = 0x40000000;
 	unsigned long attrs = C_map_attrs();
 	C_map_page(l1_tbl, virt_test, phys_test, attrs);
-	
-	unsigned long testVaddr = 0x2A00000UL;
-	C_map_page(l1_tbl, testVaddr, 0x2A00000UL, C_page_desc_norm);
-
-	struct ppage *sharedPage = allocatePhysPages(1);
-	unsigned long sharedPaddr = (unsigned long)getPhysAddr(sharedPage);
-	unsigned long sharedVaddr1 = 0x2C00000UL;
-	unsigned long sharedVaddr2 = 0x2E00000UL;
-	unsigned long C_page_desc_nc = 0x00000000 | 0b00 << 2;
-	C_map_page(l1_tbl, sharedVaddr1, sharedPaddr, C_page_desc_nc);
-	C_map_page(l1_tbl, sharedVaddr2, sharedPaddr, C_page_desc_nc);
-
+	unsigned long id_vaddr = 0x2A00000UL;
+	C_map_page(l1_tbl, id_vaddr, 0x2A00000UL, C_page_desc_norm);
+	struct ppage *nonid_paddr_page = allocatePhysPages(1);
+	unsigned long nonid_paddr = getPhysAddr(nonid_paddr_page);
+	unsigned long nonid_vaddr = 0x2C0000UL;
+	C_map_page(l1_tbl, nonid_vaddr, nonid_paddr, C_page_desc_norm);
 	C_init_mmu(l1_page);
-
+/*
 	asm volatile(
 			"dsb ish\n"
 			"tlbi vmalle1\n"
 			"dsb ish\n"
 			"isb\n"
 		    );
-
-	// Virtual memory test
-	*(unsigned int *)testVaddr = 0xDEADBEEF;
-	unsigned int read_back = *(unsigned int *)testVaddr;
-	printp("Virt read #1: 0x%x\n", read_back);
-
-	// Aliasing test w/ shared physical page
-	printp("sharedPaddr = 0x%x\n", sharedPaddr);
-	unsigned int *ptr1 = (unsigned int *)sharedVaddr1;
-	*ptr1 = 0xCAFEBABE;
-	cleanPageCache(ptr1);	
-	unsigned int *ptr2 = (unsigned int *)sharedVaddr2;
-	unsigned int val = *ptr2;
-	printp("Aliased read: 0x%x\n", val);
+*/
+	// Identity Mapping Test
+	*(unsigned int *)id_vaddr = 0xDEADBEEF;
+	unsigned int id_read_back = *(unsigned int *)id_vaddr;
+	printp("Identity Mapping Test: 0x%x\n", id_read_back);
+	// Non-Identity Mapping Test
+	*(unsigned int *)nonid_vaddr = 0xCAFEBABE;
+	unsigned int nonid_read_back = *(unsigned int *)nonid_vaddr;
+	printp("Non-Identity Mapping Test: 0x%x\n", nonid_read_back);
 
 	unsigned long esr, far, mair;
 	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));
@@ -130,9 +116,6 @@ void mmuTests() {
 			(int)(mair >> 32),
 			(int)(mair & 0xFFFFFFFF));
 
-	printp("l1_tbl virt: 0x%x\n", (unsigned int)l1_tbl);
-	printp("l1_tbl phys: 0x%x\n", (unsigned int)getPhysAddr(l1_tbl));
-	
 /*
 	unsigned long phys_uart = 0x3F215040;
 	unsigned long virt_uart = 0x40000000;

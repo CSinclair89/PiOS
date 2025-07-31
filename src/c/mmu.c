@@ -11,7 +11,8 @@
 #define PTE_AP_RW_EL1 	(0UL << 6)
 #define PTE_ATTR_IDX_0 	(0UL << 2)
 #define PTE_ATTR_IDX_1 	(1UL << 2)
-#define PAGE_DESC_NORMAL ((1 << 10) | (3 << 8) | (0 << 6) | (1 << 2) | (1 << 0))
+#define PAGE_DESC_NORMAL ((PTE_VALID | PTE_AF | PTE_ATTR_IDX_1 | PTE_AP_RW_EL1 | PTE_SH_INNER))
+#define PAGE_DESC_NC ((PTE_VALID | PTE_AF | PTE_ATTR_IDX_1 | PTE_AP_RW_EL1 | PTE_SH_INNER | UXN | PXN))
 
 // Execute-never Flags
 #define UXN 		(1ULL << 54)
@@ -33,7 +34,7 @@ unsigned long C_map_attrs() {
 }
 
 unsigned long C_page_desc_norm() { return PAGE_DESC_NORMAL; }
-
+unsigned long C_page_desc_nc() { return PAGE_DESC_NC; }
 unsigned long C_map_device_attrs() { return PTE_ATTR_IDX_1 | UXN | PXN; }
 
 void C_map_page(
@@ -42,47 +43,20 @@ void C_map_page(
 	unsigned long paddr, 
 	unsigned long attrs
 	) {
-
 	unsigned long l1_idx = (vaddr >> 30) & 0x1FF,
 		      l2_idx = (vaddr >> 21) & 0x1FF;
-
-	printp("map_page() start\n");
-
-	printp("l1_idx: 0x%x, l2_idx: 0x%x\n", 
-			(unsigned int)l1_idx, 
-			(unsigned int)l2_idx);
-
 	unsigned long *l1_entry = &l1_tbl[l1_idx];
 	unsigned long *l2_tbl;
-
 	if ((*l1_entry & PTE_VALID) == 0) {
-
-		printp("L1 entry not valid, allocating L2 table...\n");
-
 		struct ppage *l2_page = allocatePhysPages(1);
 		unsigned long l2_paddr = (unsigned long)getPhysAddr(l2_page);
-
-		printp("l2_page = 0x%x%08x\n", 
-				(unsigned int)(l2_paddr >> 32),
-				(unsigned int)(l2_paddr & 0xFFFFFFFF));
-
 		l2_tbl = (unsigned long *)getPhysAddr(l2_page);
 		unsigned long tbl_phys = (unsigned long)l2_tbl;
-
-		printp("l2_tbl = 0x%x\n", tbl_phys);
-
 		*l1_entry = ((unsigned long)l2_tbl & ~0xFFFUL) | PTE_VALID | PTE_TBL;
-
-		printp("L1 entry updated\n");
-	} else {
-		printp("L1 entry already valid, using existing L2 table\n");
-		l2_tbl = (unsigned long *)(*l1_entry & ~0xFFFUL);
-	}
-
+	} else 	l2_tbl = (unsigned long *)(*l1_entry & ~0xFFFUL);
 	unsigned long *l2_entry = &l2_tbl[l2_idx];
-
-//	unsigned long long mapped_val = (paddr & ~0x1FFFFFUL) | 0x705;	
-
+	unsigned long long mapped_val = (paddr & ~0x1FFFFFUL) | 0x705;	
+/*
 	unsigned long long mapped_val = 
 		((unsigned long long)(paddr & ~0x1FFFFFUL))
 		| PTE_VALID		// 1UL << 0
@@ -90,43 +64,19 @@ void C_map_page(
 		| PTE_AF		// 1UL << 10
 		| PTE_ATTR_IDX_1	// 1UL << 2
 		| PTE_AP_RW_EL1		// 0UL << 6
-		| PTE_SH_INNER;
-//		| UXN;
-//		| PXN;		// 3UL << 8
-
-	printp("Writing L2[0x%x] = 0x%x%08x\n",
-			(unsigned int)l2_idx,
-			(unsigned int)(mapped_val >> 32),
-			(unsigned int)(mapped_val & 0xFFFFFFFF));
-
-	*l2_entry = (unsigned long)mapped_val;
-
-	printp("Wrote to L2[%d]: 0x%x%08x\n",
-			(int)l2_idx,
-			(unsigned int)(*l2_entry >> 32),
-			(unsigned int)(*l2_entry & 0xFFFFFFFF));
-
-	printp("completed map_page()\n");
+		| PTE_SH_INNER		// 3UL << 8
+		| UXN
+		| PXN;		
+*/
+		*l2_entry = (unsigned long)mapped_val;
 }
-
 
 void C_init_mmu(struct ppage *l1_page) {
 	if (l1_page == NULL) return;
-
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
 	unsigned long l1_phys = (unsigned long)getPhysAddr(l1_page);
-
-//	unsigned long mair_val = (MAIR_NORMAL << 0) | (MAIR_DEVICE_NGNRE << 8);
 	unsigned long mair_val = (0xFF << 0) | (0x04 << 8) | (0x44 << 16);
 	asm volatile("msr MAIR_EL1, %0" :: "r"(mair_val));
-/*
-	unsigned long tcr_val = 
-		  (16UL << 0)
-		| (0b00UL << 6)
-		| (0b00UL << 8)
-		| (0b11UL << 12)
-		| (0b0UL << 14);
-*/
 	unsigned long r;
 	unsigned long b = r&0xF;
 	unsigned long tcr_val =  (0b00LL << 37) | // TBI=0, no tagging
@@ -143,22 +93,13 @@ void C_init_mmu(struct ppage *l1_page) {
         (0b01LL << 8) |  // IRGN0=1 write back
         (0b0LL  << 7) |  // EPD0 enable lower half
         (25LL   << 0);   // T0SZ=25, 3 levels (512G)
-
 	asm volatile("msr TCR_EL1, %0" :: "r"(tcr_val));
-
 	asm volatile("msr TTBR0_EL1, %0" :: "r"(l1_phys));
-
 	asm volatile("dsb ish");
 	asm volatile("isb");
 	asm volatile("tlbi vmalle1; dsb ish; isb");
-
 	unsigned long sctlr;
 	asm volatile("mrs %0, SCTLR_EL1" : "=r"(sctlr));
-/*
-	sctlr |= (1 << 0);
-	sctlr |= (1 << 2);
-	sctlr |= (1 << 12);
-  */
 	sctlr |= 0xC00800;     // set mandatory reserved bits
 	sctlr&=~((1 << 25) |   // clear EE, little endian translation tables
 	(1 << 24) |   // clear E0E
@@ -168,16 +109,12 @@ void C_init_mmu(struct ppage *l1_page) {
         (1 << 3) |    // clear SA
         (1 << 2) |    // clear C, no cache at all
         (1 << 1));    // clear A, no aligment check
-	
 	sctlr |=  (1 << 0);     // set M, enable MMU
 	asm volatile("msr SCTLR_EL1, %0" :: "r"(sctlr));
 	asm volatile("isb");
-
 	unsigned long new_sctlr;
 	asm volatile("mrs %0, SCTLR_EL1" : "=r"(new_sctlr));
-
 	printp("SCTLR_EL1 = 0x%x\n", (unsigned int)new_sctlr);
-
 }
 
 

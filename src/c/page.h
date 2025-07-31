@@ -20,5 +20,6 @@ void freePhysPages(struct ppage *ppageList);
 void printFreeList(void);
 void *getPhysAddr(struct ppage *page);
 void cleanPageCache(void *addr);
+void invalidatePageCache(void *addr);
 
 #endif
