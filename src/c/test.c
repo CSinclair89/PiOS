@@ -6,7 +6,6 @@
 #include "page.h"
 #include "mem.h"
 #include "io.h"
-#include "quirks.h"
 #include "math.h"
 
 // mapping
@@ -77,17 +76,19 @@ void mmuTests() {
 	struct ppage *l1_page = allocatePhysPages(1);
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
-	struct ppage *test_page = allocatePhysPages(1);
-	unsigned long phys_test = getPhysAddr(test_page);
-	unsigned long virt_test = 0x40000000;
-	unsigned long attrs = C_map_attrs();
-	C_map_page(l1_tbl, virt_test, phys_test, attrs);
+	
+	// Identity Mapping Test
 	unsigned long id_vaddr = 0x2A00000UL;
-	C_map_page(l1_tbl, id_vaddr, 0x2A00000UL, C_page_desc_norm);
+	unsigned long page_desc_norm = C_page_desc_norm();
+	C_map_page(l1_tbl, id_vaddr, 0x2A00000UL, page_desc_norm);
+	
+	// Non-Identity Mapping Test
 	struct ppage *nonid_paddr_page = allocatePhysPages(1);
-	unsigned long nonid_paddr = getPhysAddr(nonid_paddr_page);
+	unsigned long nonid_paddr = (unsigned long)getPhysAddr(nonid_paddr_page);
 	unsigned long nonid_vaddr = 0x2C0000UL;
-	C_map_page(l1_tbl, nonid_vaddr, nonid_paddr, C_page_desc_norm);
+	C_map_page(l1_tbl, nonid_vaddr, nonid_paddr, page_desc_norm);
+	
+	
 	C_init_mmu(l1_page);
 /*
 	asm volatile(
@@ -101,6 +102,7 @@ void mmuTests() {
 	*(unsigned int *)id_vaddr = 0xDEADBEEF;
 	unsigned int id_read_back = *(unsigned int *)id_vaddr;
 	printp("Identity Mapping Test: 0x%x\n", id_read_back);
+	
 	// Non-Identity Mapping Test
 	*(unsigned int *)nonid_vaddr = 0xCAFEBABE;
 	unsigned int nonid_read_back = *(unsigned int *)nonid_vaddr;
@@ -115,181 +117,6 @@ void mmuTests() {
 	printp("MAIR_EL1 = 0x%x%08x\n", 
 			(int)(mair >> 32),
 			(int)(mair & 0xFFFFFFFF));
-
-/*
-	unsigned long phys_uart = 0x3F215040;
-	unsigned long virt_uart = 0x40000000;
-
-	unsigned long phys_base = phys_uart & PAGE_MASK_2MB;
-	unsigned long virt_base = virt_uart & PAGE_MASK_2MB;
-
-	unsigned long attrs = C_map_device_attrs();
-	C_map_page(l1_tbl, virt_base, phys_base, attrs);
-
-	unsigned long l1_idx = (virt_base >> 30) & 0x1FF;
-	unsigned long l2_idx = (virt_base >> 21) & 0x1FF;
-	unsigned long l1_entry = l1_tbl[l1_idx];
-	unsigned long l1_upper = l1_entry >> 32;
-	unsigned long l1_lower = l1_entry & 0xFFFFFFFF;
-	unsigned long *l2_tbl = (unsigned long *)(l1_entry & ~0xFFFUL);
-	unsigned long l2_entry = l2_tbl[l2_idx];
-	unsigned long l2_upper = l2_entry >> 32;
-	unsigned long l2_lower = l2_entry & 0xFFFFFFFF;
-
-	printp("L1[%d] = upper: 0x%08x, lower: 0x%08x\n", (int)l1_idx, (unsigned int)l1_upper, (unsigned int)l1_lower);
-	printp("L2[%d] = upper: 0x%08x, lower: 0x%08x\n", (int)l2_idx, (unsigned int)l2_upper, (unsigned int)l2_lower);
-
-*/
-
-/*
-	unsigned long phys_test = 0x10000000;
-	unsigned long virt_test = 0x40000000;
-	unsigned long pbase = phys_test & ~(0x1FFFFF);
-	unsigned long vbase = virt_test & ~(0x1FFFFF);
-	unsigned long offset = phys_test & 0x1FFFFF;
-	unsigned long vaddr = vbase + offset;
-
-	unsigned long attrs = C_map_attrs();
-	*(volatile unsigned int *)phys_test = 0xDEADBEEF;
-	C_map_page(l1_tbl, vbase, pbase, attrs);
-
-
-
-	unsigned long l1_idx = (vbase >> 30) & 0x1FF;
-	unsigned long l2_idx = (vbase >> 21) & 0x1FF;
-	unsigned long l1_entry = l1_tbl[l1_idx];
-
-	unsigned long *l2_tbl = (unsigned long *)(l1_entry & ~0xFFFUL);
-	unsigned long l2_entry = l2_tbl[l2_idx];
-
-	unsigned long l1_upper = l1_entry >> 32;
-	unsigned long l1_lower = l1_entry & 0xFFFFFFFF;
-	unsigned long l2_upper = l2_entry >> 32;
-	unsigned long l2_lower = l2_entry & 0xFFFFFFFF;
-
-	printp("L1[%d] = 0x%x%08x\n", (int)l1_idx, l1_upper, l1_lower);
-	printp("L2[%d] = 0x%x%08x\n", (int)l2_idx, l2_upper, l2_lower);
-
-	unsigned long l2_tbl_paddr = l1_entry & ~0xFFFUL;
-	printp("L2 Table Paddr post-map check: 0x%x%08x\n",
-			(unsigned int)(l2_tbl_paddr >> 32),
-			(unsigned int)(l2_tbl_paddr & 0xFFFFFFFF));
-	C_map_page(l1_tbl, l2_tbl_paddr, l2_tbl_paddr, attrs);
-
-	printp("Post-map check: L2[%d] = 0x%x%08x\n",
-			(int)l2_idx,
-			(unsigned int)(l2_tbl[l2_idx] >> 32),
-			(unsigned int)(l2_tbl[l2_idx] & 0xFFFFFFFF));
-
-	asm volatile("tlbi vmalle1; dsb ish; isb");
-*/
-
-/*
-	unsigned int newtest = 0x12345678;
-
-	asm volatile("dsb sy");
-	asm volatile("str %w[value], [%[vaddr]]"
-			:: [value] "r"(newtest), [vaddr] "r"(vaddr)
-			: "memory");
-	asm volatile("dsb sy");
-
-	unsigned int virt_test_read;
-	asm volatile(
-			"ldr %w[out], [%[vaddr]]"
-			: [out] "=r"(virt_test_read)
-			: [vaddr] "r"(vaddr)
-			: "memory"
-		    );
-	printp("Virt Test Read: 0x%x\n", virt_test_read);
-
-	asm volatile("tlbi vmalle1; dsb ish; isb");
-	
-	unsigned long tcr_val, ttbr0_val;
-	asm volatile("mrs %0, TCR_EL1" : "=r"(tcr_val));
-	asm volatile("mrs %0, TTBR0_EL1" : "=r"(ttbr0_val));
-
-	unsigned long tcr_upper = tcr_val >> 32;
-	unsigned long tcr_lower = tcr_val & 0xFFFFFFFF;
-	unsigned long ttbr0_upper = ttbr0_val >> 32;
-	unsigned long ttbr0_lower = ttbr0_val & 0xFFFFFFFF;
-
-	printp("TCR_EL1 = 0x%x%08x\n", (int)tcr_upper, (int)tcr_lower);
-	printp("TTBR0_EL1 = 0x%x%08x\n", (int)ttbr0_upper, (int)ttbr0_lower);
-
-	unsigned int testval = 0xDEADBEEF;
-
-	asm volatile("dsb sy");
-	asm volatile(
-			"str %w[value], [%[vaddr]]"
-			:: [value] "r"(testval), [vaddr] "r"(vaddr)
-			: "memory"
-		    );
-	asm volatile("dsb sy");
-
-	unsigned int phys_read = *(volatile unsigned int *)pbase;
-	unsigned int virt_read;
-	asm volatile("dsb sy; isb");
-	asm volatile(
-			"ldr %w[out], [%[vaddr]]"
-			: [out] "=r"(virt_read)
-			: [vaddr] "r"(vaddr) 
-			: "memory"
-			);
-	
-	printp("Attrs = 0x%x\n", attrs);
-	printp("Phys read: 0x%x\n", phys_read);
-	printp("Virt read: 0x%x\n", virt_read);
-*/
-	
-
-
-//	printv("Hello\n");
-
-/*
-#define UART_OFFSET (0x3F215040 & 0x1FFFFF)
-	volatile unsigned int *uart_reg = (volatile unsigned int *)(virt_base + UART_OFFSET);
-	*uart_reg = 'X';
-	putv('X');
-	printv("Hello\n");
-*/
-/*	
- 	unsigned long long *l1_tbl = (unsigned long long *)raw_l1_phys;
-
-	printp("C: l1_tbl = 0x%x\n", l1_tbl);
-	call_print_paddr(l1_tbl);
-
-	void *paddr = getPhysAddr(l1_page);
-	void *vaddr = (void *)0x40200000;
-
-	unsigned long long attrs = map_page_attrs();
-
-	void *mu_phys = (void *)((uintptr_t)0x3F215040 & ~(0x1FFFFF));
-	void *mu_virt = (void *)0x40000000;
-	unsigned long long dev_attrs = map_device_attrs();
-
-	
-	map_page(l1_tbl, vaddr, paddr, attrs);
-	map_page(l1_tbl, mu_virt, mu_phys, dev_attrs);
-
-	print_page_tables_before_MMU(l1_tbl);
-
-
-	init_mmu(l1_tbl);
-
-	printp("test1\n");
-
-	unsigned int *virt = (unsigned int *)0x40200000;
-	unsigned int *phys = (unsigned int *)0x2800000;
-
-	printp("test2\n");
-
-	*phys = 0xCAFEBABE;
-	if (*virt == 0xCAFEBABE) {
-		putp('P');
-	} else { 
-		putp('F');
-	}
-*/
 	printp("\n");
 
 	printp("\n");
@@ -444,7 +271,6 @@ void queueTests() {
 	printp("Queue test complete.\n");
 
 }
-
 
 void stackTests() {
 
@@ -785,7 +611,6 @@ void vectorTests() {
 	printp("\n");
 }
 
-
 /*
  * Algorithm Tests
  */
@@ -897,8 +722,6 @@ void arraySortTests() {
 
 	printp("\n");
 
-
-
 	// Bogo Sort
 	int nums5[10] = {13, 431, 47, 14, 502, 17, 20, 42, 56, 61};
 	
@@ -923,24 +746,10 @@ void arraySortTests() {
 	printp("Bogo sort test, array after triggering error msg:\n");
 	bogoSort(nums5, numSize, "aasdfasdf");
 
-
-
-	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};
-	int nums7[10] = {66, 4, 32, 34, 532, 10, 58, 31, 98, 2};
-
-
-
-
-
-
-
-
-
-
-
+//	int nums6[10] = {85, 1, 63, 354, 2, 1, 87, 13, 15, 646};
+//	int nums7[10] = {66, 4, 32, 34, 532, 10, 58, 31, 98, 2};
 
 }
-
 
 void arraySearchTests() {
 	
@@ -1048,11 +857,7 @@ void twoSumTest() {
 
 	printp("\n");
 	printp("Two Sum test complete.\n");	
-
-
 }
-
-
 
 /*
  * Object Tests
@@ -1092,35 +897,6 @@ void stringTests() {
 	char str2[] = "world!";
 	char *newStr = strCat(str1, str2);
 	printp("%s\n", newStr);
-}
-
-void quirksTest() {
-	printp("--QUIRKS TEST--\n\n");
-
-	printp("Messing with structs (arrow vs. dot operator):\n");
-	structTest();
-
-	printp("\n");
-
-	printp("Messing with reassigning a value to a constant variable:\n");
-	constTest(42);
-
-	printp("\n");
-
-	printp("Messing with array access:\n");
-	arrayAccess();
-
-	printp("\n");
-
-	printp("Messing with integer overflow:\n");
-	intOverflow();
-
-	printp("\n");
-	printp("\n");
-	printp("\n");
-	printp("\n");
-	printp("\n");
-	printp("\n");
 }
 
 void randTest() {

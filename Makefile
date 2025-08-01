@@ -35,7 +35,6 @@ COBJS = \
 	tree.o \
 	mem.o \
 	io.o \
-	quirks.o \
 	math.o \
 
 RSSRC = $(wildcard $(RSDIR)/*.rs)

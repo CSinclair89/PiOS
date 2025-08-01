@@ -9,6 +9,7 @@
 
 unsigned long C_page_desc_norm();
 unsigned long C_page_desc_nc();
+unsigned long C_map_attrs();
 unsigned long C_map_device_attrs();
 void C_map_page(
 		unsigned long *l1_tbl, 

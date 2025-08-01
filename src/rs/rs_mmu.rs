@@ -26,9 +26,9 @@ const PTE_AF: u64 = 1 << 10;
 
 // Sets bit 1 to 0, defining entry as a block entry.
 // Mainly for clarity when forming entries.
-const PTE_BLOCK: u64 = 0;
+// const PTE_BLOCK: u64 = 0;
 const PTE_SH_INNER: u64 = 0b11 << 8;
-const PTE_AP_RW: u64 = 0 << 6;
+// const PTE_AP_RW: u64 = 0 << 6;
 const PTE_AP_RW_EL1: u64 = 0b00 << 6;
 const PTE_ATTR_IDX_0: u64 = 0 << 2;
 const UXN: u64 = 1 << 54;
@@ -36,8 +36,8 @@ const PXN: u64 = 1 << 53;
 
 // Memory Attribute Indirection Register (MAIR)
 // Non-Gathering, non-Reordering, Early Write Acknowledgements (nGnRE)
-const MAIR_DEVICE_NGNRE: u64 = 0x04;
-const MAIR_NORMAL: u64 = 0xff;
+// const MAIR_DEVICE_NGNRE: u64 = 0x04;
+// const MAIR_NORMAL: u64 = 0xff;
 
 #[no_mangle]
 pub extern "C" fn map_page_attrs() -> u64 {

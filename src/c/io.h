@@ -7,6 +7,8 @@ typedef long unsigned int size_t;
 typedef char *charptr;
 typedef int (*func_ptr)(int c);
 
+int putp(int data);
+int putv(char data);
 void putu(unsigned int x);
 void puthex(unsigned long long x);
 
