@@ -11,9 +11,11 @@ MEMORY
 
 SECTIONS
 {
+
 	/* Text section: RX */
 	.text : {
 		KEEP(*(.text.boot))
+		*(.vectors)
 		*(.text)
 	} > TEXT
 	__text_start = ADDR(.text);

@@ -24,6 +24,9 @@
 #define MAIR_NORMAL	0xFF
 #define MAIR_DEVICE_NGNRE 0x04
 
+// Exception Handler
+extern void install_exception_vector(void);
+
 unsigned long C_map_attrs() {
 	return PTE_AF 
 		| PTE_SH_INNER
@@ -59,6 +62,17 @@ void C_map_page(
 
 void C_init_mmu(struct ppage *l1_page) {
 	if (l1_page == NULL) return;
+	install_exception_vector();
+
+	// EL1h check
+	unsigned long spsel;
+	asm volatile("mrs %0, SPSel" : "=r"(spsel));
+	printp("SPSel = %d\n", spsel);
+
+	unsigned long vbar;
+	asm volatile("mrs %0, VBAR_EL1" : "=r"(vbar));
+	printp("VBAR_EL1 = 0x%x\n", (unsigned int)vbar);
+
 	unsigned long l1_phys = (unsigned long)getPhysAddr(l1_page);
 	unsigned long mair_val = (0xFF << 0) | (0x04 << 8) | (0x44 << 16);
 	asm volatile("msr MAIR_EL1, %0" :: "r"(mair_val));

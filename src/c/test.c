@@ -77,36 +77,71 @@ void mmuTests() {
 	unsigned long *l1_tbl = (unsigned long *)getPhysAddr(l1_page);
 	for (int i = 0; i < 512; i++) l1_tbl[i] = 0;
 	
-	// Identity Mapping Test
+	/*
+	 *  Identity Mapping Test
+	 */
 	unsigned long id_vaddr = 0x2A00000UL;
 	unsigned long page_desc_norm = C_page_desc_norm();
 	C_map_page(l1_tbl, id_vaddr, 0x2A00000UL, page_desc_norm);
+
+	// Identity Mapping VBAR_EL1
+	unsigned long vbar_vaddr = 0x80800;
+	C_map_page(l1_tbl, vbar_vaddr, 0x80800, page_desc_norm);
+
+	// Identity Mapping Exception Vector Table
+	unsigned long evt_vaddr = 0x80000;
+	C_map_page(l1_tbl, evt_vaddr, 0x80000, page_desc_norm);
+
+        // EL1h check
+        unsigned long spsel;
+        asm volatile("mrs %0, SPSel" : "=r"(spsel));
+        printp("SPSel = %d\n", spsel);
+
+	// Test SVC
+	printp("Triggering SVC\n");
+	asm volatile("svc #0");
+	printp("Returned from SVC\n");	
 	
 	// Non-Identity Mapping Test
 	struct ppage *nonid_paddr_page = allocatePhysPages(1);
 	unsigned long nonid_paddr = (unsigned long)getPhysAddr(nonid_paddr_page);
 	unsigned long nonid_vaddr = 0x2C0000UL;
 	C_map_page(l1_tbl, nonid_vaddr, nonid_paddr, page_desc_norm);
-	
-	
+	print_page_tables_before_MMU(l1_tbl);
+
 	C_init_mmu(l1_page);
-/*
+
 	asm volatile(
 			"dsb ish\n"
 			"tlbi vmalle1\n"
 			"dsb ish\n"
 			"isb\n"
 		    );
-*/
+
 	// Identity Mapping Test
 	*(unsigned int *)id_vaddr = 0xDEADBEEF;
-	unsigned int id_read_back = *(unsigned int *)id_vaddr;
-	printp("Identity Mapping Test: 0x%x\n", id_read_back);
+	unsigned int id_read = *(unsigned int *)id_vaddr;
+	printp("Identity Mapping Test: 0x%x\n", id_read);
 	
 	// Non-Identity Mapping Test
 	*(unsigned int *)nonid_vaddr = 0xCAFEBABE;
-	unsigned int nonid_read_back = *(unsigned int *)nonid_vaddr;
-	printp("Non-Identity Mapping Test: 0x%x\n", nonid_read_back);
+	unsigned int nonid_read = *(unsigned int *)nonid_vaddr;
+	printp("Non-Identity Mapping Test: 0x%x\n", nonid_read);
+
+	// Unmapped Access Test
+	unsigned long unmapped_vaddr = 0x4000000000UL;
+	printp("Attempting to access unmapped_vaddr 0x%x\n", unmapped_vaddr);
+	printp("test1\n");
+
+	// Test SVC
+	printp("Triggering SVC\n");
+	asm volatile("svc #0");
+	printp("Returned from SVC\n");	
+
+	*(unsigned int *)unmapped_vaddr = 0xAABBCCDD;
+	printp("test2\n");
+	unsigned int unmapped_read = *(unsigned int*)unmapped_vaddr;
+	printp("Unmapped Access Test: 0x%x\n", unmapped_read);
 
 	unsigned long esr, far, mair;
 	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));

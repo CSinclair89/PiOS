@@ -19,8 +19,11 @@ CFLAGS := -O0 -ffreestanding -fno-pie -fno-stack-protector -g3 -mcpu=cortex-a53+
 
 # Directories and objects
 ODIR = obj
+ASMDIR = src/asm
 CDIR = src/c
 RSDIR = src/rs
+
+ASMOBJS = $(ODIR)/vector.o
 
 COBJS = \
 	boot.o \
@@ -40,12 +43,16 @@ COBJS = \
 RSSRC = $(wildcard $(RSDIR)/*.rs)
 RSOBJS = $(ODIR)/rs_kernel.o
 
-OBJ = $(patsubst %,$(ODIR)/%,$(COBJS)) $(RSOBJS)
+OBJ = $(patsubst %,$(ODIR)/%,$(COBJS)) $(RSOBJS) $(ASMOBJS)
 
 # Compilation rules
 $(ODIR)/%.o: $(CDIR)/%.c
 	$(Q)echo "Compiling $< ..."
 	$(Q)$(CC) $(CFLAGS) -c -g -o $@ $^
+
+$(ODIR)/%.o: $(ASMDIR)/%.S
+	$(Q)echo "Assembling $< ..."
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 $(ODIR)/%.o: $(CDIR)/%.s
 	$(Q)echo "Assembling $< ..."

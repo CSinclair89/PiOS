@@ -60,7 +60,7 @@ pub extern "C" fn map_page(
     l1_tbl: *mut u64, // L1 page table
     vaddr: u64,
     paddr: u64,
-    attrs: u64
+//    attrs: u64
 ) {
     let l1_idx = (vaddr >> 30) & 0x1FF;
     let l2_idx = (vaddr >> 21) & 0x1FF;
