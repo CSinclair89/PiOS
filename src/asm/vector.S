@@ -4,30 +4,41 @@
 
 exception_vector_start:
 	// EL1t
-	ldr x0, =rs_handle_sync_exception	// Synchronous
+	adr x0, rs_handle_sync_exception	// Synchronous
 	br x0
-	b .					// IRQ
-	b .					// FIQ
-	b .					// SError
-	
+	adr x0, rs_handle_sync_exception	// IRQ
+	br x0	
+	adr x0, rs_handle_sync_exception	// FIQ
+	br x0
+	adr x0, rs_handle_sync_exception	// SError
+	br x0
 	// EL1h
-	ldr x0, =rs_handle_sync_exception	// Synchronous
+	adr x0, rs_handle_sync_exception	// Synchronous
 	br x0
-	b .					// IRQ
-	b .					// FIQ
-	b . 					// SError
-	
+	adr x0, rs_handle_sync_exception	// IRQ
+	br x0
+	adr x0, rs_handle_sync_exception	// FIQ
+	br x0
+	adr x0, rs_handle_sync_exception	// SError
+	br x0
 	// EL0 64
-	b . 					// Synchronous
-	b .					// IRQ
-	b .					// FIQ
-	b . 					// SError
-	
+	adr x0, rs_handle_sync_exception	// Synchronous
+	br x0
+	adr x0, rs_handle_sync_exception	// IRQ
+	br x0
+	adr x0, rs_handle_sync_exception	// FIQ
+	br x0
+	adr x0, rs_handle_sync_exception	// SError
+	br x0
 	// EL0 32
-	b . 					// Synchronous
-	b .					// IRQ
-	b .					// FIQ
-	b . 					// SError
+	adr x0, rs_handle_sync_exception	// Synchronous
+	br x0
+	adr x0, rs_handle_sync_exception	// IRQ
+	br x0
+	adr x0, rs_handle_sync_exception	// FIQ
+	br x0
+	adr x0, rs_handle_sync_exception	// SError
+	br x0
 /*
 .section .text.vectors, "ax"
 .align 11 // 2kb = 2^11

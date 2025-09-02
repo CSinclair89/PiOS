@@ -16,7 +16,7 @@ extern "C" { fn printp(msg: *const u8); }
 
 #[no_mangle]
 pub unsafe extern "C" fn install_exception_vector() {
-    extern "C" { static exception_vector_start: u8; }
+    extern "C" { static exception_vector_start: u64; }
     core::arch::asm!(
         "msr VBAR_EL1, {0}",
         in(reg) &exception_vector_start as *const _ as u64,
@@ -41,5 +41,18 @@ pub extern "C" fn rs_handle_sync_exception() {
         );
     }
 
-    loop{}
+    // Skip over SVC instruction by modifying ELR_EL1
+    unsafe {
+        let mut elr_el1: u64;
+        core::arch::asm!(
+            "mrs {0}, ELR_EL1",
+            out(reg)elr_el1,
+        );
+        elr_el1 += 4;
+        core::arch::asm!(
+            "msr ELR_EL1, {0}",
+            in(reg)elr_el1,
+        );
+    }
+    unsafe { core::arch::asm!("eret"); }
 }

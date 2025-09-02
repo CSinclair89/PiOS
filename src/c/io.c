@@ -6,10 +6,8 @@
  */
 
 #define MU_10_PHYSICAL 0x3F215040
-
-#define UART_OFFSET (0x3F215040 & 0x1FFFFF)
-#define VIRT_UART_BASE 0x40000000
-#define MU_10_VIRTUAL (VIRT_UART_BASE + UART_OFFSET)
+#define MU_10_VIRTUAL 0x3F000000
+#define DR (*(uint8_t *)0x3F215040)
 
 int putp(int data) {
 	volatile unsigned int *mu10 = (volatile unsigned int *)MU_10_PHYSICAL;

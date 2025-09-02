@@ -8,6 +8,12 @@ extern void map_page(
 		unsigned long long paddr,
 		unsigned long long attrs
 		);
+extern void rs_map_page(
+		unsigned long long* l1_tbl,
+		unsigned long long vaddr,
+		unsigned long long paddr,
+		unsigned long long attrs
+		);
 extern void init_mmu(unsigned long long *l1_tbl);
 extern unsigned long long map_page_attrs(void);
 extern unsigned long long map_device_attrs(void);
