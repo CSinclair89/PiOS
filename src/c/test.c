@@ -153,6 +153,7 @@ void mmuTests() {
 	// C Identity Mapping Exception Vector Table
 	unsigned long evt_vaddr = 0x80000;
 	C_map_page(l1_tbl, evt_vaddr, 0x80000, page_desc_norm);
+	
 	// C Non-Identity Mapping Test
 	struct ppage *nonid_page = allocatePhysPages(1);
 	unsigned long nonid_paddr = (unsigned long)getPhysAddr(nonid_page);
@@ -177,6 +178,23 @@ void mmuTests() {
 	unsigned long id_vaddr = 0x2A000000UL;
 	unsigned long page_desc_norm = rs_page_desc_norm();
 	rs_map_page(l1_tbl, id_vaddr, 0x2A000000UL, page_desc_norm);
+
+	// Rust Non-Identity Mapping Test
+	struct ppage *nonid_page = allocatePhysPages(1);
+	unsigned long nonid_paddr = (unsigned long)getPhysAddr(nonid_page);
+	unsigned long nonid_vaddr = 0x2C0000UL;
+	rs_map_page(l1_tbl, nonid_vaddr, nonid_paddr, page_desc_norm);
+
+	// C Serial Port Mapping Test
+	unsigned long serial_paddr = 0x3F200000UL;
+	unsigned long serial_vaddr = 0x20000000UL;
+	C_map_page(l1_tbl, serial_vaddr, serial_paddr, C_map_device_attrs());
+	unsigned long serial_offset = 0x15040UL;
+	printp("Serial offset: 0x%x\n", serial_offset);
+	printp("Paddr + serial offset: 0x%x\n", serial_paddr + serial_offset);
+	volatile unsigned char *serial_dr = (unsigned char *)(serial_vaddr + serial_offset);
+	printp("Vaddr + serial offset: 0x%x\n", serial_dr);
+
 
 	rs_init_mmu(l1_tbl);
 	asm volatile(
@@ -228,6 +246,23 @@ void mmuTests() {
 	*(unsigned int *)id_vaddr = 0xDEADBEEF;
 	unsigned int id_read = *(unsigned int *)id_vaddr;
 	printp("Rust Identity Mapping Test: 0x%x\n", id_read);
+	
+	// Rust Non-Identity Mapping Test
+	*(unsigned int *)nonid_vaddr = 0xCAFEBABE;
+	unsigned int nonid_read = *(unsigned int *)nonid_vaddr;
+	printp("Non-Identity Mapping Test: 0x%x\n", nonid_read);
+
+	// Serial Port Mapping Test
+	// step 1 non-id test
+/*
+	*(unsigned int *)serial_vaddr = 0xAABBCCDD;
+	unsigned int serial_read = *(unsigned int *)serial_vaddr;
+	printp("Serial Read: 0x%x\n", serial_read);
+*/
+	printp("serial_dr addr: 0x%x\n", serial_dr);
+	*serial_dr = 'H';
+	asm volatile("dsb sy" ::: "memory");
+	printv("Hello\n");
 	
 	unsigned long esr, far, mair;
 	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));
