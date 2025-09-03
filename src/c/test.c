@@ -139,10 +139,8 @@ void mmuTests() {
 	asm volatile("svc #0");
 	printp("Returned from SVC\n");
 */
-	/*
-	 *  C Identity Mapping Test
-	 */
 
+/*
 	// C Identity Mapping Test
 	unsigned long id_vaddr = 0x2A00000UL;
 	unsigned long page_desc_norm = C_page_desc_norm();
@@ -171,20 +169,23 @@ void mmuTests() {
 	volatile unsigned char *serial_dr = (unsigned char *)(serial_vaddr + serial_offset);
 	printp("Vaddr + serial offset: 0x%x\n", serial_dr);
 
-	// Rust Identity Mapping Test
-	struct ppage *rs_id_page = allocatePhysPages(1);
-	unsigned long rs_id_paddr = getPhysAddr(rs_id_page);
-
 	print_page_tables_before_MMU(l1_tbl);
 	C_init_mmu(l1_page);
+*/
 
+	// Rust Identity Mapping Test
+	unsigned long id_vaddr = 0x2A000000UL;
+	unsigned long page_desc_norm = rs_page_desc_norm();
+	rs_map_page(l1_tbl, id_vaddr, 0x2A000000UL, page_desc_norm);
+
+	rs_init_mmu(l1_tbl);
 	asm volatile(
 			"dsb ish\n"
 			"tlbi vmalle1\n"
 			"dsb ish\n"
 			"isb\n"
 		    );
-
+/*
 	// C Identity Mapping Test
 	*(unsigned int *)id_vaddr = 0xDEADBEEF;
 	unsigned int id_read = *(unsigned int *)id_vaddr;
@@ -196,7 +197,6 @@ void mmuTests() {
 	printp("Non-Identity Mapping Test: 0x%x\n", nonid_read);
 
 	// C Unmapped Access Test
-/*
 	unsigned long unmapped_vaddr = 0x40000000UL;
 	printp("Attempting to access unmapped_vaddr 0x%x\n", unmapped_vaddr);
 	printp("test1\n");
@@ -205,19 +205,18 @@ void mmuTests() {
 	unsigned int unmapped_read = *(unsigned int*)unmapped_vaddr;
 	printp("Unmapped Access Test: 0x%x\n", unmapped_read);
 
-*/
 	// Serial Port Mapping Test
 	// step 1 non-id test
-/*
+
 	*(unsigned int *)serial_vaddr = 0xAABBCCDD;
 	unsigned int serial_read = *(unsigned int *)serial_vaddr;
 	printp("Serial Read: 0x%x\n", serial_read);
-*/
+
 	printp("serial_dr addr: 0x%x\n", serial_dr);
 	*serial_dr = 'H';
 	asm volatile("dsb sy" ::: "memory");
 	printv("Hello\n");
-
+*/
 /*
 	// Test SVC
 	printp("Triggering SVC\n");
@@ -225,7 +224,11 @@ void mmuTests() {
 	printp("Returned from SVC\n");	
 */
 
-
+	// Rust Identity Mapping Test
+	*(unsigned int *)id_vaddr = 0xDEADBEEF;
+	unsigned int id_read = *(unsigned int *)id_vaddr;
+	printp("Rust Identity Mapping Test: 0x%x\n", id_read);
+	
 	unsigned long esr, far, mair;
 	asm volatile("mrs %0, ESR_EL1" : "=r"(esr));
 	asm volatile("mrs %0, FAR_EL1" : "=r"(far));

@@ -19,7 +19,7 @@
 #define UXN 		(1ULL << 54)
 #define PXN 		(1ULL << 53)
 
-// Memory Attribute Indirection Register Attribute Values
+// Memory Attribute Indirection Register Values
 #define MAIR_IDX0_NORMAL 0xFFUL
 #define MAIR_EL1_VAL (MAIR_IDX0_NORMAL << (0 * 8))
 #define MAIR_NORMAL	0xFF
